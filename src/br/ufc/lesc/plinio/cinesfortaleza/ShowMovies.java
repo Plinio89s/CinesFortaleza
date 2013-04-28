@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import br.ufc.lesc.plinio.cinesfortaleza.cines.CineIguatemi;
@@ -13,14 +14,17 @@ import br.ufc.lesc.plinio.cinesfortaleza.cines.CineIguatemi;
 public class ShowMovies extends Activity {
 
 	private Cine mCine;
-	private Context context;
+	private Context mContext;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.show_movies_layout);
-		context = this;
+		mContext = this;
 
+        setProgressBarIndeterminateVisibility(true);
+        
 		mCine = new CineIguatemi();
 
 		int cine_num = getIntent().getIntExtra(CinesFortaleza.EXTRA_CINE, -1);
@@ -39,6 +43,8 @@ public class ShowMovies extends Activity {
 	protected void onResume() {
 		super.onResume();
 
+        setProgressBarIndeterminateVisibility(true);
+        
 		// get parent container
 		LinearLayout l = (LinearLayout) findViewById(R.id.show_movies_parent_layout);
 
@@ -46,7 +52,7 @@ public class ShowMovies extends Activity {
 		l.removeAllViews();
 		
 		// put cine name
-		TextView tvCine = new TextView(context);
+		TextView tvCine = new TextView(mContext);
 		tvCine.setText(mCine.getName());
 		tvCine.setTextSize(30);
 		tvCine.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -55,13 +61,13 @@ public class ShowMovies extends Activity {
 
 		// put movie list
 		for (int i = 0; i < mCine.getMovies().size(); i++) {
-			TextView tv = new TextView(context);
+			TextView tv = new TextView(mContext);
 			tv.setText(mCine.getMovies().get(i).getName());
 			tv.setTextSize(20);
 			l.addView(tv);
 		}
-		
-		new Refresher().execute("");
+
+		new Refresher(this).execute("");
 	}
 
 	@Override
@@ -71,18 +77,26 @@ public class ShowMovies extends Activity {
 
 	class Refresher extends AsyncTask<String, Integer, Integer> {
 
+		Activity mParent;
+		
+		public Refresher(Activity parent) {
+			mParent = parent;
+		}
+		
 		@Override
 		protected Integer doInBackground(String... params) {
 
 			// refreshMoviesList
-			mCine.refreshMoviesList();
-
-			return null;
+			return mCine.refreshMoviesList();
 		}
 
 		@Override
 		protected void onPostExecute(Integer result) {
 			super.onPostExecute(result);
+			
+			if(result != 0){
+				mParent.finish();
+			}
 
 			// get parent container
 			LinearLayout l = (LinearLayout) findViewById(R.id.show_movies_parent_layout);
@@ -91,7 +105,7 @@ public class ShowMovies extends Activity {
 			l.removeAllViews();
 			
 			// put cine name
-			TextView tvCine = new TextView(context);
+			TextView tvCine = new TextView(mContext);
 			tvCine.setText(mCine.getName());
 			tvCine.setTextSize(30);
 			tvCine.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -100,13 +114,13 @@ public class ShowMovies extends Activity {
 
 			// put movie list
 			for (int i = 0; i < mCine.getMovies().size(); i++) {
-				TextView tv = new TextView(context);
+				TextView tv = new TextView(mContext);
 				tv.setText(mCine.getMovies().get(i).getName());
 				tv.setTextSize(20);
 				l.addView(tv);
 			}
-			
-			
+
+	        setProgressBarIndeterminateVisibility(false);
 		}
 
 	}

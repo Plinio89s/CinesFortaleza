@@ -24,7 +24,7 @@ public class CineIguatemi extends Cine {
 		return mMovies;
 	}
 
-	protected String getURL() {
+	public String getURL() {
 		return URL;
 	}
 
@@ -34,8 +34,8 @@ public class CineIguatemi extends Cine {
 		while (resultToAnalyze.indexOf("<figcaption>") != -1) {
 			int indexBegin = resultToAnalyze.indexOf("<figcaption>") + 12;
 			int indexEnd = resultToAnalyze.indexOf("</figcaption>", indexBegin);
-			String title = resultToAnalyze.substring(indexBegin, indexEnd);
-			if (!out.contains(title)) {
+			String title = resultToAnalyze.substring(indexBegin, indexEnd).trim();
+			if (!out.contains(title) && title.length() > 0) {
 				out.add(title);
 			}
 			resultToAnalyze = resultToAnalyze.substring(indexEnd);

@@ -23,23 +23,27 @@ public abstract class Cine {
 	private final int TIMEOUT_CONNECTION = 5000;
 	private final int TIMEOUT_REQUEST = 5000;
 	
+	/* Abstract methods */
+	
 	public abstract String getName();
 
-	protected abstract String getURL();
+	public abstract String getURL();
 
 	public abstract Vector<MovieData> getMovies();
 
 	protected abstract Vector<String> extractFilms(String rawHTMLCode,
 			Vector<String> out);
 
+	/* Concrete methods */
+	
 	public int refreshMoviesList() {
 
+		int error = 0;
 		String contentReceived = "";
 		Vector<String> films = new Vector<String>();
-		int error = 0;
 
 		try {
-			// set parameters
+			// set http connection parameters
 			HttpParams httpParams = new BasicHttpParams();
 			HttpConnectionParams.setConnectionTimeout(httpParams,
 					TIMEOUT_CONNECTION);
@@ -53,21 +57,25 @@ public abstract class Cine {
 
 			// get response
 			StatusLine statusLine = response.getStatusLine();
+			InputStream inSt = response.getEntity().getContent();
 
 			// check response's status
 			if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
-				InputStream inSt = response.getEntity().getContent();
 
 				// convert content from stream to string and print it
 				contentReceived = streamToString(inSt);
-				films = extractFilms(contentReceived, films);
+				try{
+					films = extractFilms(contentReceived, films);
+				}catch(Exception e){
+					error = 3;
+				}
 
 				// close input stream
 				inSt.close();
 
 			} else {
 				// Closes the connection.
-				response.getEntity().getContent().close();
+				inSt.close();
 				throw new IOException(statusLine.getReasonPhrase());
 			}
 		} catch (SocketTimeoutException toEx) {
@@ -80,25 +88,27 @@ public abstract class Cine {
 			error = 2;
 		}
 
-		error = 3;
-
-		Vector<MovieData> newMovies = new Vector<MovieData>();
-
-		Log.d("CineIguatemi.refreshMoviesList()", "filmNames begin");
-		for (int i = 0; i < films.size(); i++) {
-			Log.d("CineIguatemi.refreshMoviesList()", films.get(i));
-			newMovies.add(new MovieData(films.get(i)));
-		}
-		Log.d("CineIguatemi.refreshMoviesList()", "filmNames end");
-
-		getMovies().clear();
-		for (int i = 0; i < newMovies.size(); i++) {
-			getMovies().add(newMovies.get(i));
+		if(error == 0){
+			Vector<MovieData> newMovies = new Vector<MovieData>();
+	
+			Log.d("CineIguatemi.refreshMoviesList()", "filmNames begin");
+			for (int i = 0; i < films.size(); i++) {
+				Log.d("CineIguatemi.refreshMoviesList()", films.get(i));
+				newMovies.add(new MovieData(films.get(i)));
+			}
+			Log.d("CineIguatemi.refreshMoviesList()", "filmNames end");
+	
+			getMovies().clear();
+			for (int i = 0; i < newMovies.size(); i++) {
+				getMovies().add(newMovies.get(i));
+			}
 		}
 
 		return error;
 	}
 
+	/* Auxiliary methods */
+	
 	/**
 	 * Função auxiliar para passar o conteúdo de um InputStream para String
 	 * 
