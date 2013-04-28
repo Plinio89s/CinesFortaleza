@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Cines Fortaleza</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="unique">Press Here!</string>
+    <string name="iguatemi">Iguatemi</string>
+    <string name="cine_name_title">Cinemas Iguatemi</string>
+
+</resources>
