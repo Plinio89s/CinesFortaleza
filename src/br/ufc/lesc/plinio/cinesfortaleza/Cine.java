@@ -13,6 +13,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
@@ -21,10 +22,11 @@ import android.util.Log;
 public abstract class Cine {
 
 	private final int TIMEOUT_CONNECTION = 5000;
-	private final int TIMEOUT_REQUEST = 5000;
-	
+	private final int TIMEOUT_REQUEST = 10000;
+	private final String USER_AGENT = "Mozilla/5.0 (Linux; Android 4.2.2; Galaxy Nexus Build/JDQ39) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.58 Mobile Safari/537.31";
+
 	/* Abstract methods */
-	
+
 	public abstract String getName();
 
 	public abstract String getURL();
@@ -35,7 +37,7 @@ public abstract class Cine {
 			Vector<String> out);
 
 	/* Concrete methods */
-	
+
 	public int refreshMoviesList() {
 
 		int error = 0;
@@ -48,6 +50,9 @@ public abstract class Cine {
 			HttpConnectionParams.setConnectionTimeout(httpParams,
 					TIMEOUT_CONNECTION);
 			HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_REQUEST);
+			Log.d("CineIguatemi.refreshMoviesList()", "UserAgent: " + httpParams.getParameter(CoreProtocolPNames.USER_AGENT));
+			httpParams.setParameter(CoreProtocolPNames.USER_AGENT, USER_AGENT);
+			Log.d("CineIguatemi.refreshMoviesList()", "UserAgent: " + httpParams.getParameter(CoreProtocolPNames.USER_AGENT));
 
 			// create and execute HTTP request
 			HttpClient httpclient = new DefaultHttpClient(httpParams);
@@ -64,9 +69,10 @@ public abstract class Cine {
 
 				// convert content from stream to string and print it
 				contentReceived = streamToString(inSt);
-				try{
+				try {
 					films = extractFilms(contentReceived, films);
-				}catch(Exception e){
+				} catch (Exception e) {
+					e.printStackTrace();
 					error = 3;
 				}
 
@@ -88,16 +94,16 @@ public abstract class Cine {
 			error = 2;
 		}
 
-		if(error == 0){
+		if (error == 0) {
 			Vector<MovieData> newMovies = new Vector<MovieData>();
-	
+
 			Log.d("CineIguatemi.refreshMoviesList()", "filmNames begin");
 			for (int i = 0; i < films.size(); i++) {
 				Log.d("CineIguatemi.refreshMoviesList()", films.get(i));
 				newMovies.add(new MovieData(films.get(i)));
 			}
 			Log.d("CineIguatemi.refreshMoviesList()", "filmNames end");
-	
+
 			getMovies().clear();
 			for (int i = 0; i < newMovies.size(); i++) {
 				getMovies().add(newMovies.get(i));
@@ -108,7 +114,7 @@ public abstract class Cine {
 	}
 
 	/* Auxiliary methods */
-	
+
 	/**
 	 * Função auxiliar para passar o conteúdo de um InputStream para String
 	 * 

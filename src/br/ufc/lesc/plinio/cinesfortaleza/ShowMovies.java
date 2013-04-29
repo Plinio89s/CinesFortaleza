@@ -10,6 +10,7 @@ import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import br.ufc.lesc.plinio.cinesfortaleza.cines.CineIguatemi;
+import br.ufc.lesc.plinio.cinesfortaleza.cines.CineViaSul;
 
 public class ShowMovies extends Activity {
 
@@ -23,19 +24,18 @@ public class ShowMovies extends Activity {
 		setContentView(R.layout.show_movies_layout);
 		mContext = this;
 
-        setProgressBarIndeterminateVisibility(true);
-        
+		setProgressBarIndeterminateVisibility(true);
+
 		mCine = new CineIguatemi();
 
-		int cine_num = getIntent().getIntExtra(CinesFortaleza.EXTRA_CINE, -1);
+		String cineName = getIntent().getStringExtra(CinesFortaleza.EXTRA_CINE);
 
-		switch (cine_num) {
-		case 0:
+		if (cineName.equalsIgnoreCase(getResources().getString(
+				R.string.iguatemi))) {
 			mCine = new CineIguatemi();
-			break;
-		default:
-			mCine = new CineIguatemi();
-			break;
+		} else if (cineName.equalsIgnoreCase(getResources().getString(
+				R.string.via_sul))) {
+			mCine = new CineViaSul();
 		}
 	}
 
@@ -43,14 +43,14 @@ public class ShowMovies extends Activity {
 	protected void onResume() {
 		super.onResume();
 
-        setProgressBarIndeterminateVisibility(true);
-        
+		setProgressBarIndeterminateVisibility(true);
+
 		// get parent container
 		LinearLayout l = (LinearLayout) findViewById(R.id.show_movies_parent_layout);
 
 		// clear container
 		l.removeAllViews();
-		
+
 		// put cine name
 		TextView tvCine = new TextView(mContext);
 		tvCine.setText(mCine.getName());
@@ -59,12 +59,14 @@ public class ShowMovies extends Activity {
 		tvCine.setTypeface(Typeface.DEFAULT_BOLD);
 		l.addView(tvCine);
 
-		// put movie list
-		for (int i = 0; i < mCine.getMovies().size(); i++) {
-			TextView tv = new TextView(mContext);
-			tv.setText(mCine.getMovies().get(i).getName());
-			tv.setTextSize(20);
-			l.addView(tv);
+		if (mCine.getMovies() != null) {
+			// put movie list
+			for (int i = 0; i < mCine.getMovies().size(); i++) {
+				TextView tv = new TextView(mContext);
+				tv.setText(mCine.getMovies().get(i).getName());
+				tv.setTextSize(20);
+				l.addView(tv);
+			}
 		}
 
 		new Refresher(this).execute("");
@@ -78,11 +80,11 @@ public class ShowMovies extends Activity {
 	class Refresher extends AsyncTask<String, Integer, Integer> {
 
 		Activity mParent;
-		
+
 		public Refresher(Activity parent) {
 			mParent = parent;
 		}
-		
+
 		@Override
 		protected Integer doInBackground(String... params) {
 
@@ -93,8 +95,8 @@ public class ShowMovies extends Activity {
 		@Override
 		protected void onPostExecute(Integer result) {
 			super.onPostExecute(result);
-			
-			if(result != 0){
+
+			if (result != 0) {
 				mParent.finish();
 			}
 
@@ -103,7 +105,7 @@ public class ShowMovies extends Activity {
 
 			// clear container
 			l.removeAllViews();
-			
+
 			// put cine name
 			TextView tvCine = new TextView(mContext);
 			tvCine.setText(mCine.getName());
@@ -112,15 +114,17 @@ public class ShowMovies extends Activity {
 			tvCine.setTypeface(Typeface.DEFAULT_BOLD);
 			l.addView(tvCine);
 
-			// put movie list
-			for (int i = 0; i < mCine.getMovies().size(); i++) {
-				TextView tv = new TextView(mContext);
-				tv.setText(mCine.getMovies().get(i).getName());
-				tv.setTextSize(20);
-				l.addView(tv);
+			if (mCine.getMovies() != null) {
+				// put movie list
+				for (int i = 0; i < mCine.getMovies().size(); i++) {
+					TextView tv = new TextView(mContext);
+					tv.setText(mCine.getMovies().get(i).getName());
+					tv.setTextSize(20);
+					l.addView(tv);
+				}
 			}
 
-	        setProgressBarIndeterminateVisibility(false);
+			setProgressBarIndeterminateVisibility(false);
 		}
 
 	}

@@ -6,6 +6,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="unique">Press Here!</string>
     <string name="iguatemi">Iguatemi</string>
-    <string name="cine_name_title">Cinemas Iguatemi</string>
+    <string name="via_sul">Via Sul</string>
+    <string name="cine_name_title">Cinema</string>
 
 </resources>
