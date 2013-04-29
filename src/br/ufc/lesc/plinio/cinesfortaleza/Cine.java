@@ -13,7 +13,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
@@ -23,7 +22,9 @@ public abstract class Cine {
 
 	private final int TIMEOUT_CONNECTION = 5000;
 	private final int TIMEOUT_REQUEST = 10000;
-	private final String USER_AGENT = "Mozilla/5.0 (Linux; Android 4.2.2; Galaxy Nexus Build/JDQ39) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.58 Mobile Safari/537.31";
+
+	// private final String USER_AGENT =
+	// "Mozilla/5.0 (Linux; Android 4.2.2; Galaxy Nexus Build/JDQ39) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.58 Mobile Safari/537.31";
 
 	/* Abstract methods */
 
@@ -50,9 +51,6 @@ public abstract class Cine {
 			HttpConnectionParams.setConnectionTimeout(httpParams,
 					TIMEOUT_CONNECTION);
 			HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_REQUEST);
-			Log.d("CineIguatemi.refreshMoviesList()", "UserAgent: " + httpParams.getParameter(CoreProtocolPNames.USER_AGENT));
-			httpParams.setParameter(CoreProtocolPNames.USER_AGENT, USER_AGENT);
-			Log.d("CineIguatemi.refreshMoviesList()", "UserAgent: " + httpParams.getParameter(CoreProtocolPNames.USER_AGENT));
 
 			// create and execute HTTP request
 			HttpClient httpclient = new DefaultHttpClient(httpParams);

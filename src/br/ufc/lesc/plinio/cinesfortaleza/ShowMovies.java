@@ -9,6 +9,8 @@ import android.view.Gravity;
 import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+import br.ufc.lesc.plinio.cinesfortaleza.cines.CineBenfica;
 import br.ufc.lesc.plinio.cinesfortaleza.cines.CineIguatemi;
 import br.ufc.lesc.plinio.cinesfortaleza.cines.CineViaSul;
 
@@ -36,6 +38,9 @@ public class ShowMovies extends Activity {
 		} else if (cineName.equalsIgnoreCase(getResources().getString(
 				R.string.via_sul))) {
 			mCine = new CineViaSul();
+		} else if (cineName.equalsIgnoreCase(getResources().getString(
+				R.string.benfica))) {
+			mCine = new CineBenfica();
 		}
 	}
 
@@ -97,6 +102,10 @@ public class ShowMovies extends Activity {
 			super.onPostExecute(result);
 
 			if (result != 0) {
+				Toast.makeText(
+						mParent,
+						"Não foi possível acessar a lista de filmes do cinema selecionado.",
+						Toast.LENGTH_LONG).show();
 				mParent.finish();
 			}
 

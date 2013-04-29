@@ -11,23 +11,27 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
+        android:layout_gravity="center_horizontal"
         android:orientation="vertical" >
 
         <TextView
-            android:id="@+id/textView1"
+            android:id="@+id/textViewWelcomeText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="@string/unique"
-            android:clickable="true"
-            android:onClick="allClick"
+            android:textAlignment="center"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:text="@string/text_choise"
             android:textAppearance="?android:attr/textAppearanceLarge" />
-
+        
         <TextView
             android:id="@+id/textViewIguatemi"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
             android:text="@string/iguatemi"
             android:clickable="true"
             android:onClick="cineClick"
@@ -38,7 +42,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
             android:text="@string/via_sul"
+            android:clickable="true"
+            android:onClick="cineClick"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+        
+        <TextView
+            android:id="@+id/textViewBenfica"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:text="@string/benfica"
             android:clickable="true"
             android:onClick="cineClick"
             android:textAppearance="?android:attr/textAppearanceLarge" />
