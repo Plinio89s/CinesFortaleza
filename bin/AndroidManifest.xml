@@ -26,7 +26,10 @@
         </activity>
         <activity
             android:name="br.ufc.lesc.plinio.cinesfortaleza.ShowMovies"
-            android:label="@string/cine_name_title" />
+            android:label="@string/cine_title" />
+        <activity
+            android:name="br.ufc.lesc.plinio.cinesfortaleza.ShowSessions"
+            android:label="@string/movie_title" />
     </application>
 
 </manifest>

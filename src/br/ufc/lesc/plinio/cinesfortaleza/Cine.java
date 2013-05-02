@@ -23,8 +23,7 @@ public abstract class Cine {
 	private final int TIMEOUT_CONNECTION = 5000;
 	private final int TIMEOUT_REQUEST = 10000;
 
-	// private final String USER_AGENT =
-	// "Mozilla/5.0 (Linux; Android 4.2.2; Galaxy Nexus Build/JDQ39) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.58 Mobile Safari/537.31";
+	protected Vector<MovieData> mMovies;
 
 	/* Abstract methods */
 
@@ -32,18 +31,19 @@ public abstract class Cine {
 
 	public abstract String getURL();
 
-	public abstract Vector<MovieData> getMovies();
-
-	protected abstract Vector<String> extractFilms(String rawHTMLCode,
-			Vector<String> out);
+	protected abstract Vector<MovieData> extractFilms(String rawHTMLCode,
+			Vector<MovieData> out);
 
 	/* Concrete methods */
+
+	public Vector<MovieData> getMovies(){
+		return mMovies;
+	}
 
 	public int refreshMoviesList() {
 
 		int error = 0;
 		String contentReceived = "";
-		Vector<String> films = new Vector<String>();
 
 		try {
 			// set http connection parameters
@@ -65,10 +65,10 @@ public abstract class Cine {
 			// check response's status
 			if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
 
-				// convert content from stream to string and print it
+				// convert content from stream to string
 				contentReceived = streamToString(inSt);
 				try {
-					films = extractFilms(contentReceived, films);
+					mMovies = extractFilms(contentReceived, mMovies);
 				} catch (Exception e) {
 					e.printStackTrace();
 					error = 3;
@@ -90,22 +90,6 @@ public abstract class Cine {
 			Log.e("CineIguatemi.refreshMoviesList()", "GENERIC ERROR");
 			ex.printStackTrace();
 			error = 2;
-		}
-
-		if (error == 0) {
-			Vector<MovieData> newMovies = new Vector<MovieData>();
-
-			Log.d("CineIguatemi.refreshMoviesList()", "filmNames begin");
-			for (int i = 0; i < films.size(); i++) {
-				Log.d("CineIguatemi.refreshMoviesList()", films.get(i));
-				newMovies.add(new MovieData(films.get(i)));
-			}
-			Log.d("CineIguatemi.refreshMoviesList()", "filmNames end");
-
-			getMovies().clear();
-			for (int i = 0; i < newMovies.size(); i++) {
-				getMovies().add(newMovies.get(i));
-			}
 		}
 
 		return error;

@@ -1,13 +1,18 @@
 package br.ufc.lesc.plinio.cinesfortaleza;
 
+import java.util.ArrayList;
+import java.util.Vector;
+
 import android.app.Activity;
-import android.content.Context;
-import android.graphics.Typeface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.Gravity;
+import android.view.View;
 import android.view.Window;
-import android.widget.LinearLayout;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import br.ufc.lesc.plinio.cinesfortaleza.cines.CineBenfica;
@@ -16,31 +21,51 @@ import br.ufc.lesc.plinio.cinesfortaleza.cines.CineViaSul;
 
 public class ShowMovies extends Activity {
 
+	protected static final String EXTRA_MOVIE = "MOVIE_SELECTED";
+	protected static final String EXTRA_SESSIONS = "SESSIONS";
+
 	private Cine mCine;
-	private Context mContext;
+	private ListView mListView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-		setContentView(R.layout.show_movies_layout);
-		mContext = this;
 
+		// request permission to use (indeterminate) progress bar
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
+		setContentView(R.layout.show_movies_layout);
+
+		// initialize member attributes
+		mCine = new CineBenfica();
+		mListView = (ListView) findViewById(R.id.list_view_movies);
+
+		// set ListView's onItemClick method
+		mListView.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View v,
+					int position, long id) {
+				onClick(position);
+			}
+		});
+
+		// start progress bar
 		setProgressBarIndeterminateVisibility(true);
 
-		mCine = new CineIguatemi();
-
+		// decode cine choose
 		String cineName = getIntent().getStringExtra(CinesFortaleza.EXTRA_CINE);
+		CineBenfica cineBenfica = new CineBenfica();
+		CineIguatemi cineIguatemi = new CineIguatemi();
+		CineViaSul cineViaSul = new CineViaSul();
 
-		if (cineName.equalsIgnoreCase(getResources().getString(
-				R.string.iguatemi))) {
-			mCine = new CineIguatemi();
-		} else if (cineName.equalsIgnoreCase(getResources().getString(
-				R.string.via_sul))) {
-			mCine = new CineViaSul();
-		} else if (cineName.equalsIgnoreCase(getResources().getString(
-				R.string.benfica))) {
-			mCine = new CineBenfica();
+		if (cineName != null) {
+			if (cineName.equalsIgnoreCase(cineIguatemi.getName())) {
+				mCine = cineIguatemi;
+			} else if (cineName.equalsIgnoreCase(cineViaSul.getName())) {
+				mCine = cineViaSul;
+			} else if (cineName.equalsIgnoreCase(cineBenfica.getName())) {
+				mCine = cineBenfica;
+			}
 		}
 	}
 
@@ -50,29 +75,12 @@ public class ShowMovies extends Activity {
 
 		setProgressBarIndeterminateVisibility(true);
 
-		// get parent container
-		LinearLayout l = (LinearLayout) findViewById(R.id.show_movies_parent_layout);
+		((TextView) findViewById(R.id.title_cine)).setText(mCine.getName());
 
-		// clear container
-		l.removeAllViews();
+		ArrayAdapter<MovieData> adapter = new ArrayAdapter<MovieData>(this,
+				android.R.layout.simple_list_item_1, mCine.getMovies());
 
-		// put cine name
-		TextView tvCine = new TextView(mContext);
-		tvCine.setText(mCine.getName());
-		tvCine.setTextSize(30);
-		tvCine.setGravity(Gravity.CENTER_HORIZONTAL);
-		tvCine.setTypeface(Typeface.DEFAULT_BOLD);
-		l.addView(tvCine);
-
-		if (mCine.getMovies() != null) {
-			// put movie list
-			for (int i = 0; i < mCine.getMovies().size(); i++) {
-				TextView tv = new TextView(mContext);
-				tv.setText(mCine.getMovies().get(i).getName());
-				tv.setTextSize(20);
-				l.addView(tv);
-			}
-		}
+		mListView.setAdapter(adapter);
 
 		new Refresher(this).execute("");
 	}
@@ -80,6 +88,19 @@ public class ShowMovies extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
+	}
+
+	private void onClick(int pos) {
+		ArrayList<String> ss = new ArrayList<String>();
+		Vector<String> sessions = mCine.getMovies().get(pos).getSessions();
+		for (int j = 0; j < sessions.size(); j++) {
+			ss.add(sessions.get(j));
+		}
+		Intent i = new Intent(this, ShowSessions.class);
+		i.putStringArrayListExtra(EXTRA_SESSIONS, ss);
+		i.putExtra(EXTRA_MOVIE, mCine.getMovies().get(pos).getName());
+		startActivity(i);
+		setProgressBarIndeterminateVisibility(false);
 	}
 
 	class Refresher extends AsyncTask<String, Integer, Integer> {
@@ -92,7 +113,6 @@ public class ShowMovies extends Activity {
 
 		@Override
 		protected Integer doInBackground(String... params) {
-
 			// refreshMoviesList
 			return mCine.refreshMoviesList();
 		}
@@ -109,32 +129,15 @@ public class ShowMovies extends Activity {
 				mParent.finish();
 			}
 
-			// get parent container
-			LinearLayout l = (LinearLayout) findViewById(R.id.show_movies_parent_layout);
+			ArrayAdapter<MovieData> adapter = new ArrayAdapter<MovieData>(
+					mParent, android.R.layout.simple_list_item_1,
+					mCine.getMovies());
 
-			// clear container
-			l.removeAllViews();
-
-			// put cine name
-			TextView tvCine = new TextView(mContext);
-			tvCine.setText(mCine.getName());
-			tvCine.setTextSize(30);
-			tvCine.setGravity(Gravity.CENTER_HORIZONTAL);
-			tvCine.setTypeface(Typeface.DEFAULT_BOLD);
-			l.addView(tvCine);
-
-			if (mCine.getMovies() != null) {
-				// put movie list
-				for (int i = 0; i < mCine.getMovies().size(); i++) {
-					TextView tv = new TextView(mContext);
-					tv.setText(mCine.getMovies().get(i).getName());
-					tv.setTextSize(20);
-					l.addView(tv);
-				}
-			}
+			mListView.setAdapter(adapter);
 
 			setProgressBarIndeterminateVisibility(false);
 		}
 
-	}
+	} // class Refresher
+
 }

@@ -2,6 +2,8 @@ package br.ufc.lesc.plinio.cinesfortaleza.cines;
 
 import java.util.Vector;
 
+import android.text.format.Time;
+import android.util.Log;
 import br.ufc.lesc.plinio.cinesfortaleza.Cine;
 import br.ufc.lesc.plinio.cinesfortaleza.MovieData;
 
@@ -31,9 +33,10 @@ public class CineViaSul extends Cine {
 	}
 
 	@Override
-	protected Vector<String> extractFilms(String rawHTMLCode, Vector<String> out) {
+	protected Vector<MovieData> extractFilms(String rawHTMLCode,
+			Vector<MovieData> out) {
 		String resultToAnalyze = rawHTMLCode;
-		out.clear();
+		Vector<String> films = new Vector<String>();
 
 		String tagBegin = "<span class=\"next\">Next</span>";
 		String tagEnd = "<script type=\"text/javascript\">";
@@ -67,13 +70,36 @@ public class CineViaSul extends Cine {
 				break;
 			String title = nspArt.substring(indexBeginTitle, indexEndTitle)
 					.trim();
-			if (!out.contains(title) && title.length() > 0) {
-				out.add(title);
+			if (title.length() > 0) {
+				films.add(title);
 			}
 			resultToAnalyze = resultToAnalyze.substring(indexEndNspArt);
 		}
 
-		return out;
+		mMovies.clear();
+
+		Log.d("CineIguatemi.refreshMoviesList()", "filmNames begin");
+		for (int i = 0; i < films.size(); i++) {
+			Log.d("CineIguatemi.refreshMoviesList()", films.get(i));
+			MovieData m = new MovieData(films.get(i));
+			Vector<String> sessions = new Vector<String>();
+			sessions.add(new Time().toString());
+			try {
+				Thread.sleep(10);
+				sessions.add(new Time().toString());
+				Thread.sleep(10);
+				sessions.add(new Time().toString());
+				Thread.sleep(10);
+				sessions.add(new Time().toString());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			m.setSessions(sessions);
+			mMovies.add(m);
+		}
+		Log.d("CineIguatemi.refreshMoviesList()", "filmNames end");
+
+		return mMovies;
 	}
 
 }

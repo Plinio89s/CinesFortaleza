@@ -2,28 +2,26 @@ package br.ufc.lesc.plinio.cinesfortaleza;
 
 import java.util.Vector;
 
-import android.text.format.Time;
-
 public class MovieData {
 
 	private String mName;
-	private Vector<Time> mSessions;
+	private Vector<String> mSessions;
 	
 	/* Constructors methods */
 	
 	public MovieData() {
 		mName = "";
-		mSessions = new Vector<Time>();
+		mSessions = new Vector<String>();
 		mSessions.clear();
 	}
 
 	public MovieData(String name) {
 		mName = name;
-		mSessions = new Vector<Time>();
+		mSessions = new Vector<String>();
 		mSessions.clear();
 	}
 
-	public MovieData(String name, Vector<Time> sessions) {
+	public MovieData(String name, Vector<String> sessions) {
 		mName = name;
 		mSessions = sessions;
 	}
@@ -34,7 +32,7 @@ public class MovieData {
 		return mName;
 	}
 
-	public Vector<Time> getSessions() {
+	public Vector<String> getSessions() {
 		return mSessions;
 	}
 
@@ -42,8 +40,12 @@ public class MovieData {
 		this.mName = name;
 	}
 
-	public void setSessions(Vector<Time> sessions) {
+	public void setSessions(Vector<String> sessions) {
 		this.mSessions = sessions;
 	}
 	
+	@Override
+	public String toString() {
+		return getName();
+	}
 }

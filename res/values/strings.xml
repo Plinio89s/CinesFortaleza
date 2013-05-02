@@ -6,9 +6,8 @@
     <string name="hello_world">Hello world!</string>
     <string name="text_choise">Escolha o cinema que você deseja consultar:</string>
     <string name="unique">Press Here!</string>
-    <string name="iguatemi">Iguatemi</string>
-    <string name="via_sul">Via Sul</string>
-    <string name="benfica">Benfica</string>
-    <string name="cine_name_title">Cinema</string>
+    <string name="empty"> </string>
+    <string name="cine_title">Cinema</string>
+    <string name="movie_title">Sessões</string>
 
 </resources>
