@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.util.Vector;
 
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
@@ -20,10 +22,13 @@ import android.util.Log;
 
 public abstract class Cine {
 
+	private final long MAX_PAGE_SIZE = 500000;
 	private final int TIMEOUT_CONNECTION = 5000;
 	private final int TIMEOUT_REQUEST = 10000;
 
 	protected Vector<MovieData> mMovies;
+	InputStream mInputStream;
+	private boolean mStop = false;
 
 	/* Abstract methods */
 
@@ -31,19 +36,22 @@ public abstract class Cine {
 
 	public abstract String getURL();
 
+	public abstract String getEndTag();
+
 	protected abstract Vector<MovieData> extractFilms(String rawHTMLCode,
 			Vector<MovieData> out);
 
 	/* Concrete methods */
 
-	public Vector<MovieData> getMovies(){
+	public Vector<MovieData> getMovies() {
 		return mMovies;
 	}
 
-	public int refreshMoviesList() {
+	public int refreshMoviesList(ShowMovies.Refresher refersher) {
 
 		int error = 0;
 		String contentReceived = "";
+		mStop = false;
 
 		try {
 			// set http connection parameters
@@ -51,6 +59,8 @@ public abstract class Cine {
 			HttpConnectionParams.setConnectionTimeout(httpParams,
 					TIMEOUT_CONNECTION);
 			HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_REQUEST);
+			// httpParams.setParameter(CoreProtocolPNames.USER_AGENT,
+			// "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31");
 
 			// create and execute HTTP request
 			HttpClient httpclient = new DefaultHttpClient(httpParams);
@@ -60,32 +70,40 @@ public abstract class Cine {
 
 			// get response
 			StatusLine statusLine = response.getStatusLine();
-			InputStream inSt = response.getEntity().getContent();
+			HttpEntity entity = response.getEntity();
+			Header headers[] = response.getAllHeaders();
+			for (int i = 0; i < headers.length; i++) {
+				Log.d("Cine.refreshMoviesList", headers[i].getName() + ": "
+						+ headers[i].getValue());
+			}
+			mInputStream = entity.getContent();
 
 			// check response's status
 			if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
 
 				// convert content from stream to string
-				contentReceived = streamToString(inSt);
+				contentReceived = streamToString(refersher);
 				try {
 					mMovies = extractFilms(contentReceived, mMovies);
 				} catch (Exception e) {
 					e.printStackTrace();
 					error = 3;
 				}
-
-				// close input stream
-				inSt.close();
-
 			} else {
-				// Closes the connection.
-				inSt.close();
 				throw new IOException(statusLine.getReasonPhrase());
 			}
 		} catch (SocketTimeoutException toEx) {
 			Log.e("CineIguatemi.refreshMoviesList()", "TIMEOUT");
 			toEx.printStackTrace();
 			error = 1;
+		} catch (IOException ioEx) {
+			if (mStop) {
+				error = 0;
+			} else {
+				Log.e("CineIguatemi.refreshMoviesList()", "GENERIC ERROR");
+				ioEx.printStackTrace();
+				error = 2;
+			}
 		} catch (Exception ex) {
 			Log.e("CineIguatemi.refreshMoviesList()", "GENERIC ERROR");
 			ex.printStackTrace();
@@ -111,32 +129,55 @@ public abstract class Cine {
 		int count;
 		while ((count = is.read(bytes)) > 0) {
 			baos.write(bytes, 0, count);
+			// set progress
+
 		}
 		return new String(baos.toByteArray());
 	}
 
 	/**
-	 * Função auxiliar para passar o conteúdo de um InputStream para String (não
-	 * bloqueante)
+	 * Função auxiliar para passar o conteúdo de um InputStream para String
 	 * 
 	 * @param is
 	 *            InputStream que se deseja converter
-	 * @param num
-	 *            numero de bytes a serem lidos da stream
 	 * @return String com o conteúdo do de is
 	 * @throws IOException
 	 */
-	static String streamToString(InputStream is, int num) throws IOException {
-		byte[] bytes = new byte[num];
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	private String streamToString(ShowMovies.Refresher refresher)
+			throws IOException {
+		Log.d("DEBUG", "START");
+		byte[] bytes = new byte[512];
 		int count;
-		if (is.available() > 0) {
-			count = is.read(bytes);
+		long countTotal = 0;
+		int total = 74000; // entity.getContentLength();
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		while ((count = mInputStream.read(bytes)) > 0) {
+			countTotal += count;
 			baos.write(bytes, 0, count);
-			return new String(baos.toByteArray());
-		} else {
-			return "";
+			// set progress
+			refresher.updateProgress((int) (10000 * countTotal / total));
+			Log.d("Cine.streamToString()", "read: " + countTotal);
+			if (countTotal > MAX_PAGE_SIZE) {
+				break;
+			}
+			if (new String(baos.toByteArray())
+					.contains("</section><!--/por filme-->")) {
+				break;
+			}
 		}
+		Log.d("DEBUG", "END " + countTotal);
+		return new String(baos.toByteArray());
 	}
 
+	public void stop() {
+		mStop = true;
+		if (mInputStream == null)
+			return;
+		try {
+			mInputStream.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+	}
 }

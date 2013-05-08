@@ -33,6 +33,7 @@ public class ShowMovies extends Activity {
 
 		// request permission to use (indeterminate) progress bar
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		requestWindowFeature(Window.FEATURE_PROGRESS);
 
 		setContentView(R.layout.show_movies_layout);
 
@@ -51,6 +52,7 @@ public class ShowMovies extends Activity {
 
 		// start progress bar
 		setProgressBarIndeterminateVisibility(true);
+		setProgressBarVisibility(true);
 
 		// decode cine choose
 		String cineName = getIntent().getStringExtra(CinesFortaleza.EXTRA_CINE);
@@ -74,6 +76,9 @@ public class ShowMovies extends Activity {
 		super.onResume();
 
 		setProgressBarIndeterminateVisibility(true);
+		setProgressBarVisibility(true);
+		setProgress(0);
+		mCine.stop();
 
 		((TextView) findViewById(R.id.title_cine)).setText(mCine.getName());
 
@@ -88,6 +93,9 @@ public class ShowMovies extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
+		setProgressBarIndeterminateVisibility(false);
+		setProgressBarVisibility(false);
+		mCine.stop();
 	}
 
 	private void onClick(int pos) {
@@ -101,6 +109,7 @@ public class ShowMovies extends Activity {
 		i.putExtra(EXTRA_MOVIE, mCine.getMovies().get(pos).getName());
 		startActivity(i);
 		setProgressBarIndeterminateVisibility(false);
+		setProgressBarVisibility(false);
 	}
 
 	class Refresher extends AsyncTask<String, Integer, Integer> {
@@ -111,15 +120,28 @@ public class ShowMovies extends Activity {
 			mParent = parent;
 		}
 
+		public void updateProgress(int progress) {
+			publishProgress(progress);
+			// Log.d("Refresher.serProgress", ""+progress);
+		}
+
 		@Override
 		protected Integer doInBackground(String... params) {
 			// refreshMoviesList
-			return mCine.refreshMoviesList();
+			return mCine.refreshMoviesList(this);
+		}
+
+		@Override
+		protected void onProgressUpdate(Integer... values) {
+			super.onProgressUpdate(values);
+			setProgress(values[0]);
 		}
 
 		@Override
 		protected void onPostExecute(Integer result) {
 			super.onPostExecute(result);
+
+			setProgress(100000);
 
 			if (result != 0) {
 				Toast.makeText(
@@ -136,6 +158,7 @@ public class ShowMovies extends Activity {
 			mListView.setAdapter(adapter);
 
 			setProgressBarIndeterminateVisibility(false);
+			setProgressBarVisibility(false);
 		}
 
 	} // class Refresher

@@ -13,6 +13,9 @@ public class CineViaSul extends Cine {
 	private static final String NAME = "Via Sul";
 	private static final String URL = "http://www.shoppingviasul.com.br/index.php/entretenimento";
 
+	private final String TAG_BEGIN = "<span class=\"next\">Next</span>";
+	private final String TAG_END = "<script type=\"text/javascript\">";
+
 	public CineViaSul() {
 		mMovies = new Vector<MovieData>();
 	}
@@ -28,6 +31,11 @@ public class CineViaSul extends Cine {
 	}
 
 	@Override
+	public String getEndTag() {
+		return TAG_END;
+	}
+
+	@Override
 	public Vector<MovieData> getMovies() {
 		return mMovies;
 	}
@@ -38,15 +46,12 @@ public class CineViaSul extends Cine {
 		String resultToAnalyze = rawHTMLCode;
 		Vector<String> films = new Vector<String>();
 
-		String tagBegin = "<span class=\"next\">Next</span>";
-		String tagEnd = "<script type=\"text/javascript\">";
-
-		int indexBeginSection = resultToAnalyze.indexOf(tagBegin)
-				+ tagBegin.length();
+		int indexBeginSection = resultToAnalyze.indexOf(TAG_BEGIN)
+				+ TAG_BEGIN.length();
 		if (indexBeginSection == -1)
 			return out;
-		int indexEndSection = resultToAnalyze
-				.indexOf(tagEnd, indexBeginSection);
+		int indexEndSection = resultToAnalyze.indexOf(TAG_END,
+				indexBeginSection);
 		if (indexEndSection == -1)
 			return out;
 		resultToAnalyze = resultToAnalyze.substring(indexBeginSection,

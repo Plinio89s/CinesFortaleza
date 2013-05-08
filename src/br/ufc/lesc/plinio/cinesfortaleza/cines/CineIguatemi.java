@@ -10,6 +10,8 @@ public class CineIguatemi extends Cine {
 	private Vector<MovieData> mMovies;
 	private static final String NAME = "Iguatemi";
 	private static final String URL = "http://www.iguatemifortaleza.com.br/cinema";
+	private final String TAG_BEGIN = "<section id=\"por-filme\" class=\"a-filme\">";
+	private final String TAG_END = "</section><!--/por filme-->";
 
 	public CineIguatemi() {
 		mMovies = new Vector<MovieData>();
@@ -28,6 +30,11 @@ public class CineIguatemi extends Cine {
 		return URL;
 	}
 
+	@Override
+	public String getEndTag() {
+		return TAG_END;
+	}
+
 	protected Vector<MovieData> extractFilms(String rawHTMLCode,
 			Vector<MovieData> out) {
 		int indexBeginArticle;
@@ -43,21 +50,18 @@ public class CineIguatemi extends Cine {
 		int indexEndHorarios;
 		String horarios;
 
-		String tagBegin = "<section id=\"por-filme\" class=\"a-filme\">";
-		String tagEnd = "</section><!--/por filme-->";
-
 		String resultToAnalyze = rawHTMLCode;
 		Vector<String> sessions = new Vector<String>();
 		MovieData m = new MovieData();
 
 		mMovies.clear();
 
-		int indexBeginSection = resultToAnalyze.indexOf(tagBegin)
-				+ tagBegin.length();
+		int indexBeginSection = resultToAnalyze.indexOf(TAG_BEGIN)
+				+ TAG_BEGIN.length();
 		if (indexBeginSection == -1)
 			return out;
-		int indexEndSection = resultToAnalyze
-				.indexOf(tagEnd, indexBeginSection);
+		int indexEndSection = resultToAnalyze.indexOf(TAG_END,
+				indexBeginSection);
 		if (indexEndSection == -1)
 			return out;
 		resultToAnalyze = resultToAnalyze.substring(indexBeginSection,
@@ -98,17 +102,18 @@ public class CineIguatemi extends Cine {
 
 			// get sessions
 			sessions = new Vector<String>();
-			while (resultToAnalyze.indexOf("<div class=\"horarios\">") != -1) {
-				indexBeginHorarios = resultToAnalyze
+			while (article.indexOf("<div class=\"horarios\">") != -1) {
+				indexBeginHorarios = article
 						.indexOf("<div class=\"horarios\">") + 22;
-				indexEndHorarios = resultToAnalyze.indexOf(
-						"</article><!--/filme-->", indexBeginHorarios);
+				indexEndHorarios = article
+						.indexOf("</div>", indexBeginHorarios);
 				if (indexEndHorarios == -1)
 					break;
-				horarios = resultToAnalyze.substring(indexBeginHorarios,
+				horarios = article.substring(indexBeginHorarios,
 						indexEndHorarios);
 
 				sessions.add(horarios);
+				article = article.substring(indexEndHorarios);
 			}
 
 			m.setSessions(sessions);
