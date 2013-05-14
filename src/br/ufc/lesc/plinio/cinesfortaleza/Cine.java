@@ -38,8 +38,7 @@ public abstract class Cine {
 
 	public abstract String getEndTag();
 
-	protected abstract Vector<MovieData> extractFilms(String rawHTMLCode,
-			Vector<MovieData> out);
+	protected abstract Vector<MovieData> extractFilms(String rawHTMLCode);
 
 	/* Concrete methods */
 
@@ -84,7 +83,7 @@ public abstract class Cine {
 				// convert content from stream to string
 				contentReceived = streamToString(refersher);
 				try {
-					mMovies = extractFilms(contentReceived, mMovies);
+					mMovies = extractFilms(contentReceived);
 				} catch (Exception e) {
 					e.printStackTrace();
 					error = 3;

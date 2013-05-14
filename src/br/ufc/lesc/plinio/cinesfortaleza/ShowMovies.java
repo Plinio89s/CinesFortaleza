@@ -53,6 +53,7 @@ public class ShowMovies extends Activity {
 		// start progress bar
 		setProgressBarIndeterminateVisibility(true);
 		setProgressBarVisibility(true);
+		setProgress(0);
 
 		// decode cine choose
 		String cineName = getIntent().getStringExtra(CinesFortaleza.EXTRA_CINE);
@@ -69,16 +70,15 @@ public class ShowMovies extends Activity {
 				mCine = cineBenfica;
 			}
 		}
+
+		mCine.stop();
+		
+		new Refresher(this).execute("");
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-
-		setProgressBarIndeterminateVisibility(true);
-		setProgressBarVisibility(true);
-		setProgress(0);
-		mCine.stop();
 
 		((TextView) findViewById(R.id.title_cine)).setText(mCine.getName());
 
@@ -87,7 +87,6 @@ public class ShowMovies extends Activity {
 
 		mListView.setAdapter(adapter);
 
-		new Refresher(this).execute("");
 	}
 
 	@Override

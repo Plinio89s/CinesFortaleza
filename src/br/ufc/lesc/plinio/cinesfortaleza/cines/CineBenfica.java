@@ -28,10 +28,9 @@ public class CineBenfica extends Cine {
 	public String getEndTag() {
 		return null;
 	}
-	
+
 	@Override
-	protected Vector<MovieData> extractFilms(String rawHTMLCode,
-			Vector<MovieData> out) {
+	protected Vector<MovieData> extractFilms(String rawHTMLCode) {
 
 		int indexBeginFilme;
 		int indexEndFilme;

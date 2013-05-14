@@ -10,6 +10,7 @@ public class CineIguatemi extends Cine {
 	private Vector<MovieData> mMovies;
 	private static final String NAME = "Iguatemi";
 	private static final String URL = "http://www.iguatemifortaleza.com.br/cinema";
+
 	private final String TAG_BEGIN = "<section id=\"por-filme\" class=\"a-filme\">";
 	private final String TAG_END = "</section><!--/por filme-->";
 
@@ -35,8 +36,8 @@ public class CineIguatemi extends Cine {
 		return TAG_END;
 	}
 
-	protected Vector<MovieData> extractFilms(String rawHTMLCode,
-			Vector<MovieData> out) {
+	@Override
+	protected Vector<MovieData> extractFilms(String rawHTMLCode) {
 		int indexBeginArticle;
 		int indexEndArticle;
 		String article;
@@ -59,11 +60,11 @@ public class CineIguatemi extends Cine {
 		int indexBeginSection = resultToAnalyze.indexOf(TAG_BEGIN)
 				+ TAG_BEGIN.length();
 		if (indexBeginSection == -1)
-			return out;
+			return mMovies;
 		int indexEndSection = resultToAnalyze.indexOf(TAG_END,
 				indexBeginSection);
 		if (indexEndSection == -1)
-			return out;
+			return mMovies;
 		resultToAnalyze = resultToAnalyze.substring(indexBeginSection,
 				indexEndSection);
 

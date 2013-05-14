@@ -2,8 +2,6 @@ package br.ufc.lesc.plinio.cinesfortaleza.cines;
 
 import java.util.Vector;
 
-import android.text.format.Time;
-import android.util.Log;
 import br.ufc.lesc.plinio.cinesfortaleza.Cine;
 import br.ufc.lesc.plinio.cinesfortaleza.MovieData;
 
@@ -41,70 +39,85 @@ public class CineViaSul extends Cine {
 	}
 
 	@Override
-	protected Vector<MovieData> extractFilms(String rawHTMLCode,
-			Vector<MovieData> out) {
+	protected Vector<MovieData> extractFilms(String rawHTMLCode) {
+		int indexBeginTitle;
+		int indexEndTitle;
+		String title;
+		int indexBeginNspArt;
+		int indexEndNspArt;
+		String nspArt;
+		int indexBeginHorarios;
+		int indexEndHorarios;
+		String horarios;
+
 		String resultToAnalyze = rawHTMLCode;
-		Vector<String> films = new Vector<String>();
+		Vector<String> sessions = new Vector<String>();
+		MovieData m = new MovieData();
+
+		mMovies.clear();
 
 		int indexBeginSection = resultToAnalyze.indexOf(TAG_BEGIN)
 				+ TAG_BEGIN.length();
 		if (indexBeginSection == -1)
-			return out;
+			return mMovies;
 		int indexEndSection = resultToAnalyze.indexOf(TAG_END,
 				indexBeginSection);
 		if (indexEndSection == -1)
-			return out;
+			return mMovies;
 		resultToAnalyze = resultToAnalyze.substring(indexBeginSection,
 				indexEndSection);
 
 		while (resultToAnalyze.indexOf("<div class=\"nsp_art") != -1) {
-			int indexBeginNspArt = resultToAnalyze
-					.indexOf("<div class=\"nsp_art") + 20;
-			int indexEndNspArt = resultToAnalyze.indexOf("</div></div>",
+
+			// get title
+			indexBeginNspArt = resultToAnalyze.indexOf("<div class=\"nsp_art") + 20;
+			indexEndNspArt = resultToAnalyze.indexOf("</div></div>",
 					indexBeginNspArt);
 			if (indexEndNspArt == -1)
 				break;
-			String nspArt = resultToAnalyze.substring(indexBeginNspArt,
-					indexEndNspArt);
+			nspArt = resultToAnalyze
+					.substring(indexBeginNspArt, indexEndNspArt);
 
-			int indexBeginTitle = nspArt.indexOf("title=\"") + 7;
+			indexBeginTitle = nspArt.indexOf("title=\"") + 7;
 			if (indexBeginTitle == -1)
 				break;
-			int indexEndTitle = nspArt.indexOf("\">", indexBeginTitle);
+			indexEndTitle = nspArt.indexOf("\">", indexBeginTitle);
 			if (indexEndTitle == -1)
 				break;
-			String title = nspArt.substring(indexBeginTitle, indexEndTitle)
-					.trim();
+			title = nspArt.substring(indexBeginTitle, indexEndTitle).trim();
 			if (title.length() > 0) {
-				films.add(title);
+				m = new MovieData(title);
+			} else {
+				resultToAnalyze = resultToAnalyze.substring(indexEndNspArt);
+				continue;
 			}
-			resultToAnalyze = resultToAnalyze.substring(indexEndNspArt);
-		}
 
-		mMovies.clear();
+			// get sessions
+			sessions = new Vector<String>();
+			while (nspArt.indexOf("<a href=\"/index.php/em-cartaz/") != -1) {
+				indexBeginHorarios = nspArt
+						.indexOf("<a href=\"/index.php/em-cartaz/") + 9;
+				indexEndHorarios = nspArt.indexOf("\"", indexBeginHorarios);
+				if (indexEndHorarios == -1)
+					break;
+				horarios = nspArt.substring(indexBeginHorarios,
+						indexEndHorarios);
 
-		Log.d("CineIguatemi.refreshMoviesList()", "filmNames begin");
-		for (int i = 0; i < films.size(); i++) {
-			Log.d("CineIguatemi.refreshMoviesList()", films.get(i));
-			MovieData m = new MovieData(films.get(i));
-			Vector<String> sessions = new Vector<String>();
-			sessions.add(new Time().toString());
-			try {
-				Thread.sleep(10);
-				sessions.add(new Time().toString());
-				Thread.sleep(10);
-				sessions.add(new Time().toString());
-				Thread.sleep(10);
-				sessions.add(new Time().toString());
-			} catch (Exception e) {
-				e.printStackTrace();
+				sessions.add(horarios);
+				nspArt = nspArt.substring(indexEndHorarios);
 			}
+
 			m.setSessions(sessions);
 			mMovies.add(m);
+
+			resultToAnalyze = resultToAnalyze.substring(indexEndNspArt);
 		}
-		Log.d("CineIguatemi.refreshMoviesList()", "filmNames end");
 
 		return mMovies;
 	}
 
+	protected Vector<MovieData> extractSessions(String rawHTMLCode,
+			Vector<MovieData> out) {
+		return out;
+	}
 }
