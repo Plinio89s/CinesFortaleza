@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import br.ufc.lesc.plinio.cinesfortaleza.cines.CineBenfica;
 import br.ufc.lesc.plinio.cinesfortaleza.cines.CineIguatemi;
+import br.ufc.lesc.plinio.cinesfortaleza.cines.CinePatioDomLuis;
 import br.ufc.lesc.plinio.cinesfortaleza.cines.CineViaSul;
 
 public class ShowMovies extends Activity {
@@ -60,6 +61,7 @@ public class ShowMovies extends Activity {
 		CineBenfica cineBenfica = new CineBenfica();
 		CineIguatemi cineIguatemi = new CineIguatemi();
 		CineViaSul cineViaSul = new CineViaSul();
+		CinePatioDomLuis cinePatioDomLuis = new CinePatioDomLuis();
 
 		if (cineName != null) {
 			if (cineName.equalsIgnoreCase(cineIguatemi.getName())) {
@@ -68,11 +70,13 @@ public class ShowMovies extends Activity {
 				mCine = cineViaSul;
 			} else if (cineName.equalsIgnoreCase(cineBenfica.getName())) {
 				mCine = cineBenfica;
+			} else if (cineName.equalsIgnoreCase(cinePatioDomLuis.getName())) {
+				mCine = cinePatioDomLuis;
 			}
 		}
 
 		mCine.stop();
-		
+
 		new Refresher(this).execute("");
 	}
 

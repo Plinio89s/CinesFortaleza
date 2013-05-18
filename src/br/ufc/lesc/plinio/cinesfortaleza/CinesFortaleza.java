@@ -4,6 +4,7 @@ import java.util.Vector;
 
 import br.ufc.lesc.plinio.cinesfortaleza.cines.CineBenfica;
 import br.ufc.lesc.plinio.cinesfortaleza.cines.CineIguatemi;
+import br.ufc.lesc.plinio.cinesfortaleza.cines.CinePatioDomLuis;
 import br.ufc.lesc.plinio.cinesfortaleza.cines.CineViaSul;
 
 import android.app.Activity;
@@ -30,15 +31,8 @@ public class CinesFortaleza extends Activity {
 		cines.add(new CineBenfica().getName());
 		cines.add(new CineIguatemi().getName());
 		cines.add(new CineViaSul().getName());
-		cines.add(new CineBenfica().getName());
-		cines.add(new CineIguatemi().getName());
-		cines.add(new CineViaSul().getName());
-		cines.add(new CineBenfica().getName());
-		cines.add(new CineIguatemi().getName());
-		cines.add(new CineViaSul().getName());
-		cines.add(new CineBenfica().getName());
-		cines.add(new CineIguatemi().getName());
-		cines.add(new CineViaSul().getName());
+		cines.add(new CinePatioDomLuis().getName());
+
 
 		// create adapter
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,

@@ -7,35 +7,26 @@ import br.ufc.lesc.plinio.cinesfortaleza.MovieData;
 
 public class CineViaSul extends Cine {
 
-	private Vector<MovieData> mMovies;
 	private static final String NAME = "Via Sul";
 	private static final String URL = "http://www.shoppingviasul.com.br/index.php/entretenimento";
 
-	private final String TAG_BEGIN = "<span class=\"next\">Next</span>";
-	private final String TAG_END = "<script type=\"text/javascript\">";
+	private static final String TAG_BEGIN = "<span class=\"next\">Next</span>";
+	private static final String TAG_END = "<script type=\"text/javascript\">";
 
 	public CineViaSul() {
 		mMovies = new Vector<MovieData>();
 	}
 
-	@Override
 	public String getName() {
 		return NAME;
 	}
 
-	@Override
 	public String getURL() {
 		return URL;
 	}
 
-	@Override
 	public String getEndTag() {
 		return TAG_END;
-	}
-
-	@Override
-	public Vector<MovieData> getMovies() {
-		return mMovies;
 	}
 
 	@Override

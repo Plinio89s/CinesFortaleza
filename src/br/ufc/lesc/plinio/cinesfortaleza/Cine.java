@@ -32,11 +32,11 @@ public abstract class Cine {
 
 	/* Abstract methods */
 
-	public abstract String getName();
+	abstract public String getName();
 
-	public abstract String getURL();
+	abstract public String getURL();
 
-	public abstract String getEndTag();
+	abstract public String getEndTag();
 
 	protected abstract Vector<MovieData> extractFilms(String rawHTMLCode);
 

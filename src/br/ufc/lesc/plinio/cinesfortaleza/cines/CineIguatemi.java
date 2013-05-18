@@ -7,12 +7,11 @@ import br.ufc.lesc.plinio.cinesfortaleza.MovieData;
 
 public class CineIguatemi extends Cine {
 
-	private Vector<MovieData> mMovies;
 	private static final String NAME = "Iguatemi";
 	private static final String URL = "http://www.iguatemifortaleza.com.br/cinema";
 
-	private final String TAG_BEGIN = "<section id=\"por-filme\" class=\"a-filme\">";
-	private final String TAG_END = "</section><!--/por filme-->";
+	private static final String TAG_BEGIN = "<section id=\"por-filme\" class=\"a-filme\">";
+	private static final String TAG_END = "</section><!--/por filme-->";
 
 	public CineIguatemi() {
 		mMovies = new Vector<MovieData>();
@@ -23,15 +22,10 @@ public class CineIguatemi extends Cine {
 		return NAME;
 	}
 
-	public Vector<MovieData> getMovies() {
-		return mMovies;
-	}
-
 	public String getURL() {
 		return URL;
 	}
 
-	@Override
 	public String getEndTag() {
 		return TAG_END;
 	}

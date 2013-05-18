@@ -14,17 +14,14 @@ public class CineBenfica extends Cine {
 		mMovies = new Vector<MovieData>();
 	}
 
-	@Override
 	public String getName() {
 		return NAME;
 	}
 
-	@Override
 	public String getURL() {
 		return URL;
 	}
 
-	@Override
 	public String getEndTag() {
 		return null;
 	}
