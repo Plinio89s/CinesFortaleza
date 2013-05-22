@@ -135,7 +135,6 @@ public class CineProvider {
 
 		while (resultToAnalyze.indexOf(TAG_CINEMA_BEGIN) != -1) {
 
-			Log.d("CineProvider.extractCines()","while");
 			// get cinema
 			indexBeginCinema = resultToAnalyze.indexOf(TAG_CINEMA_BEGIN)
 					+ TAG_CINEMA_BEGIN.length();
@@ -152,6 +151,12 @@ public class CineProvider {
 			if (indexBeginName == -1)
 				break;
 			cineName = cinema.substring(indexBeginName).trim();
+			
+			// BUGFIX: o site está com caracteres estranhos
+			cineName = cineName.replace("Ã­", "í");
+			cineName = cineName.replace("Ã¡", "á");
+			cineName = cineName.replace("Ãº", "ú");
+			cineName = cineName.replace("Ã£", "ã");
 
 			//if (cineName.length() > 0) {
 				mCines.add(new CineVM(cineName, cineCode));
@@ -173,7 +178,7 @@ public class CineProvider {
 	 */
 	private static String streamToString(CinesFortaleza.Refresher refresher)
 			throws IOException {
-		Log.d("DEBUG", "START");
+		//Log.d("DEBUG", "START");
 		byte[] bytes = new byte[512];
 		int count;
 		long countTotal = 0;
@@ -184,7 +189,7 @@ public class CineProvider {
 			baos.write(bytes, 0, count);
 			// set progress
 			refresher.updateProgress((int) (10000 * countTotal / total));
-			Log.d("Cine.streamToString()", "read: " + countTotal);
+			//Log.d("Cine.streamToString()", "read: " + countTotal);
 			if (countTotal > MAX_PAGE_SIZE) {
 				break;
 			}
@@ -192,7 +197,7 @@ public class CineProvider {
 				break;
 			}
 		}
-		Log.d("DEBUG", "END " + countTotal);
+		//Log.d("DEBUG", "END " + countTotal);
 		return new String(baos.toByteArray(), "iso-8859-1");
 	}
 

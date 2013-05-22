@@ -15,7 +15,7 @@ public class CineVM extends Cine {
 
 	public CineVM(String cineName, String cineNumber) {
 		mMovies = new Vector<MovieData>();
-		NAME = "Cinema " + cineName;
+		NAME = cineName;
 		URL += cineNumber;
 	}
 
