@@ -16,9 +16,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import br.ufc.lesc.plinio.cinesfortaleza.cines.CineBenfica;
-import br.ufc.lesc.plinio.cinesfortaleza.cines.CineIguatemi;
-import br.ufc.lesc.plinio.cinesfortaleza.cines.CinePatioDomLuis;
-import br.ufc.lesc.plinio.cinesfortaleza.cines.CineViaSul;
 
 public class ShowMovies extends Activity {
 
@@ -58,22 +55,41 @@ public class ShowMovies extends Activity {
 
 		// decode cine choose
 		String cineName = getIntent().getStringExtra(CinesFortaleza.EXTRA_CINE);
-		CineBenfica cineBenfica = new CineBenfica();
-		CineIguatemi cineIguatemi = new CineIguatemi();
-		CineViaSul cineViaSul = new CineViaSul();
-		CinePatioDomLuis cinePatioDomLuis = new CinePatioDomLuis();
 
 		if (cineName != null) {
-			if (cineName.equalsIgnoreCase(cineIguatemi.getName())) {
-				mCine = cineIguatemi;
-			} else if (cineName.equalsIgnoreCase(cineViaSul.getName())) {
-				mCine = cineViaSul;
-			} else if (cineName.equalsIgnoreCase(cineBenfica.getName())) {
-				mCine = cineBenfica;
-			} else if (cineName.equalsIgnoreCase(cinePatioDomLuis.getName())) {
-				mCine = cinePatioDomLuis;
+			Vector<Cine> cines = CineProvider.getCines();
+			for (int i = 0; i < cines.size(); i++) {
+				if (cineName.equalsIgnoreCase(cines.get(i).getName())) {
+					mCine = cines.get(i);
+				}
 			}
 		}
+
+		// CineVM cine1 = new CineVM("", "43");
+		// CineVM cine2 = new CineVM("", "44");
+		// CineVM cine3 = new CineVM("", "52");
+		// CineVM cine4 = new CineVM("", "51");
+		// CineVM cine5 = new CineVM("", "39");
+		// CineVM cine6 = new CineVM("", "36");
+		// CineVM cine7 = new CineVM("", "47");
+		//
+		// if (cineName != null) {
+		// if (cineName.equalsIgnoreCase(cine1.getName())) {
+		// mCine = cine1;
+		// } else if (cineName.equalsIgnoreCase(cine2.getName())) {
+		// mCine = cine2;
+		// } else if (cineName.equalsIgnoreCase(cine3.getName())) {
+		// mCine = cine3;
+		// } else if (cineName.equalsIgnoreCase(cine4.getName())) {
+		// mCine = cine4;
+		// } else if (cineName.equalsIgnoreCase(cine5.getName())) {
+		// mCine = cine5;
+		// } else if (cineName.equalsIgnoreCase(cine6.getName())) {
+		// mCine = cine6;
+		// } else if (cineName.equalsIgnoreCase(cine7.getName())) {
+		// mCine = cine7;
+		// }
+		// }
 
 		mCine.stop();
 
@@ -125,7 +141,6 @@ public class ShowMovies extends Activity {
 
 		public void updateProgress(int progress) {
 			publishProgress(progress);
-			// Log.d("Refresher.serProgress", ""+progress);
 		}
 
 		@Override
