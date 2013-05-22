@@ -128,8 +128,6 @@ public abstract class Cine {
 		int count;
 		while ((count = is.read(bytes)) > 0) {
 			baos.write(bytes, 0, count);
-			// set progress
-
 		}
 		return new String(baos.toByteArray());
 	}
@@ -159,13 +157,12 @@ public abstract class Cine {
 			if (countTotal > MAX_PAGE_SIZE) {
 				break;
 			}
-			if (new String(baos.toByteArray())
-					.contains("</section><!--/por filme-->")) {
+			if (new String(baos.toByteArray()).contains(getEndTag())) {
 				break;
 			}
 		}
 		Log.d("DEBUG", "END " + countTotal);
-		return new String(baos.toByteArray());
+		return new String(baos.toByteArray(), "iso-8859-1");
 	}
 
 	public void stop() {

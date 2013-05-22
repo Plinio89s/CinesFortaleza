@@ -8,10 +8,10 @@ import br.ufc.lesc.plinio.cinesfortaleza.MovieData;
 public class CinePatioDomLuis extends Cine {
 
 	private static final String NAME = "Pátio Dom Luis";
-	private static final String URL = "http://www.patiodomluis.com.br/cinemas";
+	private static final String URL = "http://verdesmares.globo.com/v3/canais/cinema_mais_info.asp?cinema=52";
 
-	private static final String TAG_BEGIN = "<h2>FILMES EM CARTAZ</h2>";
-	private static final String TAG_END = "</div> <!-- /#main -->";
+	private static final String TAG_BEGIN = "<h4 class=\"h4PC\">Salas</h4>";
+	private static final String TAG_END = "<h4 class=\"h4PC\">Ingressos</h4>";
 
 	public CinePatioDomLuis() {
 		mMovies = new Vector<MovieData>();
@@ -31,23 +31,18 @@ public class CinePatioDomLuis extends Cine {
 
 	@Override
 	protected Vector<MovieData> extractFilms(String rawHTMLCode) {
-
-		int indexBeginFieldTitle;
-		int indexEndFieldTitle;
-		String fieldTitle;
+		int indexBeginFilme;
+		int indexEndFilme;
+		String filme;
 		int indexBeginTitle;
 		int indexEndTitle;
 		String title;
-		int indexBeginHorario;
-		int indexEndHorario;
-		String Horario;
-		int indexBeginFieldHorario;
-		int indexEndFieldHorario;
-		String fieldHorario;
-		Vector<String> sessions;
+		int indexBeginHorarios;
+		int indexEndHorarios;
+		String horarios;
 
 		String resultToAnalyze = rawHTMLCode;
-		sessions = new Vector<String>();
+		Vector<String> sessions = new Vector<String>();
 		MovieData m = new MovieData();
 
 		mMovies.clear();
@@ -63,57 +58,50 @@ public class CinePatioDomLuis extends Cine {
 		resultToAnalyze = resultToAnalyze.substring(indexBeginSection,
 				indexEndSection);
 
-		while (resultToAnalyze.indexOf("<div class=\"views-field-title\">") != -1) {
+		while (resultToAnalyze.indexOf("Filme: </em><a href=\"") != -1) {
 
 			// get title
-			indexBeginFieldTitle = resultToAnalyze
-					.indexOf("<div class=\"views-field-title\">") + 31;
-			indexEndFieldTitle = resultToAnalyze.indexOf("</div>",
-					indexBeginFieldTitle);
-			if (indexEndFieldTitle == -1)
+			indexBeginFilme = resultToAnalyze.indexOf("Filme: </em><a href=\"") + 21;
+			indexEndFilme = resultToAnalyze.indexOf("Classificação:",
+					indexBeginFilme);
+			if (indexEndFilme == -1)
 				break;
-			fieldTitle = resultToAnalyze.substring(indexBeginFieldTitle,
-					indexEndFieldTitle);
+			filme = resultToAnalyze.substring(indexBeginFilme, indexEndFilme);
 
-			indexBeginTitle = fieldTitle
-					.indexOf("<span class=\"field-content\">") + 28;
-			indexEndTitle = fieldTitle.indexOf("</span>", indexBeginTitle);
+			indexBeginTitle = filme.indexOf(">") + 1;
+			if (indexBeginTitle == -1)
+				break;
+			indexEndTitle = filme.indexOf("</a>", indexBeginTitle);
 			if (indexEndTitle == -1)
 				break;
-			title = fieldTitle.substring(indexBeginTitle, indexEndTitle).trim();
+			title = filme.substring(indexBeginTitle, indexEndTitle).trim();
 
 			if (title.length() > 0) {
 				m = new MovieData(title);
 			} else {
-				resultToAnalyze = resultToAnalyze.substring(indexEndFieldTitle);
+				resultToAnalyze = resultToAnalyze.substring(indexEndFilme);
 				continue;
 			}
 
 			// get sessions
-			indexBeginHorario = resultToAnalyze.indexOf("Horário:") + 8;
-			indexEndHorario = resultToAnalyze.indexOf("</div>",
-					indexBeginHorario);
-			if (indexEndHorario == -1)
-				break;
-			Horario = resultToAnalyze.substring(indexBeginHorario,
-					indexEndHorario);
-
-			indexBeginFieldHorario = Horario
-					.indexOf("<span class=\"field-content\">") + 28;
-			indexEndFieldHorario = Horario.indexOf("</span>",
-					indexBeginFieldHorario);
-			if (indexEndFieldHorario == -1)
-				break;
-			fieldHorario = Horario.substring(indexBeginFieldHorario,
-					indexEndFieldHorario);
-
 			sessions = new Vector<String>();
-			sessions.add(fieldHorario);
+			while (filme.indexOf("Sessões: </em>") != -1) {
+
+				indexBeginHorarios = filme.indexOf("Sessões: </em>") + 14;
+				indexEndHorarios = filme.indexOf("</span>", indexBeginHorarios);
+				if (indexEndHorarios == -1)
+					break;
+				horarios = filme
+						.substring(indexBeginHorarios, indexEndHorarios);
+
+				sessions.add(horarios);
+				filme = filme.substring(indexEndHorarios);
+			}
 
 			m.setSessions(sessions);
 			mMovies.add(m);
 
-			resultToAnalyze = resultToAnalyze.substring(indexEndHorario);
+			resultToAnalyze = resultToAnalyze.substring(indexEndFilme);
 		}
 
 		return mMovies;

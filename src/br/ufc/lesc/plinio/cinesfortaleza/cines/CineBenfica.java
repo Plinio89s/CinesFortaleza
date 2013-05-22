@@ -8,7 +8,10 @@ import br.ufc.lesc.plinio.cinesfortaleza.MovieData;
 public class CineBenfica extends Cine {
 
 	private static final String NAME = "Benfica";
-	private static final String URL = "http://www.shoppingbenfica.com.br/benfica/cinema";
+	private static final String URL = "http://verdesmares.globo.com/v3/canais/cinema_mais_info.asp?cinema=39";
+
+	private static final String TAG_BEGIN = "<h4 class=\"h4PC\">Salas</h4>";
+	private static final String TAG_END = "<h4 class=\"h4PC\">Ingressos</h4>";
 
 	public CineBenfica() {
 		mMovies = new Vector<MovieData>();
@@ -23,45 +26,56 @@ public class CineBenfica extends Cine {
 	}
 
 	public String getEndTag() {
-		return null;
+		return TAG_END;
 	}
 
 	@Override
 	protected Vector<MovieData> extractFilms(String rawHTMLCode) {
-
 		int indexBeginFilme;
 		int indexEndFilme;
-		String Filme;
+		String filme;
 		int indexBeginTitle;
 		int indexEndTitle;
 		String title;
-		int indexBeginHora;
-		int indexEndHora;
-		String Hora;
-		Vector<String> sessions;
+		int indexBeginHorarios;
+		int indexEndHorarios;
+		String horarios;
 
 		String resultToAnalyze = rawHTMLCode;
+		Vector<String> sessions = new Vector<String>();
 		MovieData m = new MovieData();
 
 		mMovies.clear();
 
-		while (resultToAnalyze.indexOf("<div class=\"filme\">") != -1) {
+		int indexBeginSection = resultToAnalyze.indexOf(TAG_BEGIN)
+				+ TAG_BEGIN.length();
+		if (indexBeginSection == -1)
+			return mMovies;
+		int indexEndSection = resultToAnalyze.indexOf(TAG_END,
+				indexBeginSection);
+		if (indexEndSection == -1)
+			return mMovies;
+		resultToAnalyze = resultToAnalyze.substring(indexBeginSection,
+				indexEndSection);
+		
+		while (resultToAnalyze.indexOf("Filme: </em><a href=\"") != -1) {
 
 			// get title
-			indexBeginFilme = resultToAnalyze.indexOf("<div class=\"filme\">") + 19;
-			indexEndFilme = resultToAnalyze.indexOf("</div><!-- filme -->",
+			indexBeginFilme = resultToAnalyze.indexOf("Filme: </em><a href=\"") + 21;
+			indexEndFilme = resultToAnalyze.indexOf("Classificação:",
 					indexBeginFilme);
 			if (indexEndFilme == -1)
 				break;
-			Filme = resultToAnalyze.substring(indexBeginFilme, indexEndFilme);
+			filme = resultToAnalyze.substring(indexBeginFilme, indexEndFilme);
 
-			indexBeginTitle = Filme.indexOf("<div class=\"titulo\">") + 20;
+			indexBeginTitle = filme.indexOf(">") + 1;
 			if (indexBeginTitle == -1)
 				break;
-			indexEndTitle = Filme.indexOf("</div>", indexBeginTitle);
+			indexEndTitle = filme.indexOf("</a>", indexBeginTitle);
 			if (indexEndTitle == -1)
 				break;
-			title = Filme.substring(indexBeginTitle, indexEndTitle).trim();
+			title = filme.substring(indexBeginTitle, indexEndTitle).trim();
+
 			if (title.length() > 0) {
 				m = new MovieData(title);
 			} else {
@@ -70,14 +84,19 @@ public class CineBenfica extends Cine {
 			}
 
 			// get sessions
-			indexBeginHora = resultToAnalyze.indexOf("<span class=\"hora\">") + 19;
-			indexEndHora = resultToAnalyze.indexOf("</span>", indexBeginHora);
-			if (indexEndFilme == -1)
-				break;
-			Hora = resultToAnalyze.substring(indexBeginHora, indexEndHora);
-
 			sessions = new Vector<String>();
-			sessions.add(Hora);
+			while (filme.indexOf("Sessões: </em>") != -1) {
+
+				indexBeginHorarios = filme.indexOf("Sessões: </em>") + 14;
+				indexEndHorarios = filme.indexOf("</span>", indexBeginHorarios);
+				if (indexEndHorarios == -1)
+					break;
+				horarios = filme
+						.substring(indexBeginHorarios, indexEndHorarios);
+
+				sessions.add(horarios);
+				filme = filme.substring(indexEndHorarios);
+			}
 
 			m.setSessions(sessions);
 			mMovies.add(m);

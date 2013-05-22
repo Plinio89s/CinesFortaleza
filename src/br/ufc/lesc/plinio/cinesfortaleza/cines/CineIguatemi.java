@@ -8,10 +8,10 @@ import br.ufc.lesc.plinio.cinesfortaleza.MovieData;
 public class CineIguatemi extends Cine {
 
 	private static final String NAME = "Iguatemi";
-	private static final String URL = "http://www.iguatemifortaleza.com.br/cinema";
+	private static final String URL = "http://verdesmares.globo.com/v3/canais/cinema_mais_info.asp?cinema=47";
 
-	private static final String TAG_BEGIN = "<section id=\"por-filme\" class=\"a-filme\">";
-	private static final String TAG_END = "</section><!--/por filme-->";
+	private static final String TAG_BEGIN = "<h4 class=\"h4PC\">Salas</h4>";
+	private static final String TAG_END = "<h4 class=\"h4PC\">Ingressos</h4>";
 
 	public CineIguatemi() {
 		mMovies = new Vector<MovieData>();
@@ -32,12 +32,9 @@ public class CineIguatemi extends Cine {
 
 	@Override
 	protected Vector<MovieData> extractFilms(String rawHTMLCode) {
-		int indexBeginArticle;
-		int indexEndArticle;
-		String article;
-		int indexBeginFooter;
-		int indexEndFooter;
-		String footer;
+		int indexBeginFilme;
+		int indexEndFilme;
+		String filme;
 		int indexBeginTitle;
 		int indexEndTitle;
 		String title;
@@ -61,60 +58,51 @@ public class CineIguatemi extends Cine {
 			return mMovies;
 		resultToAnalyze = resultToAnalyze.substring(indexBeginSection,
 				indexEndSection);
-
-		while (resultToAnalyze.indexOf("<article>") != -1) {
+		
+		while (resultToAnalyze.indexOf("Filme: </em><a href=\"") != -1) {
 
 			// get title
-			indexBeginArticle = resultToAnalyze.indexOf("<article>") + 9;
-			indexEndArticle = resultToAnalyze.indexOf(
-					"</article><!--/filme-->", indexBeginArticle);
-			if (indexEndArticle == -1)
+			indexBeginFilme = resultToAnalyze.indexOf("Filme: </em><a href=\"") + 21;
+			indexEndFilme = resultToAnalyze.indexOf("Classificação:",
+					indexBeginFilme);
+			if (indexEndFilme == -1)
 				break;
-			article = resultToAnalyze.substring(indexBeginArticle,
-					indexEndArticle);
+			filme = resultToAnalyze.substring(indexBeginFilme, indexEndFilme);
 
-			indexBeginFooter = article.indexOf("<footer>") + 8;
-			if (indexBeginFooter == -1)
-				break;
-			indexEndFooter = article.indexOf("</footer>", indexBeginFooter);
-			if (indexEndFooter == -1)
-				break;
-			footer = article.substring(indexBeginFooter, indexEndFooter);
-
-			indexBeginTitle = footer.indexOf("<h4>") + 4;
+			indexBeginTitle = filme.indexOf(">") + 1;
 			if (indexBeginTitle == -1)
 				break;
-			indexEndTitle = footer.indexOf("</h4>", indexBeginTitle);
+			indexEndTitle = filme.indexOf("</a>", indexBeginTitle);
 			if (indexEndTitle == -1)
 				break;
-			title = footer.substring(indexBeginTitle, indexEndTitle).trim();
+			title = filme.substring(indexBeginTitle, indexEndTitle).trim();
+
 			if (title.length() > 0) {
 				m = new MovieData(title);
 			} else {
-				resultToAnalyze = resultToAnalyze.substring(indexEndArticle);
+				resultToAnalyze = resultToAnalyze.substring(indexEndFilme);
 				continue;
 			}
 
 			// get sessions
 			sessions = new Vector<String>();
-			while (article.indexOf("<div class=\"horarios\">") != -1) {
-				indexBeginHorarios = article
-						.indexOf("<div class=\"horarios\">") + 22;
-				indexEndHorarios = article
-						.indexOf("</div>", indexBeginHorarios);
+			while (filme.indexOf("Sessões: </em>") != -1) {
+
+				indexBeginHorarios = filme.indexOf("Sessões: </em>") + 14;
+				indexEndHorarios = filme.indexOf("</span>", indexBeginHorarios);
 				if (indexEndHorarios == -1)
 					break;
-				horarios = article.substring(indexBeginHorarios,
-						indexEndHorarios);
+				horarios = filme
+						.substring(indexBeginHorarios, indexEndHorarios);
 
 				sessions.add(horarios);
-				article = article.substring(indexEndHorarios);
+				filme = filme.substring(indexEndHorarios);
 			}
 
 			m.setSessions(sessions);
 			mMovies.add(m);
 
-			resultToAnalyze = resultToAnalyze.substring(indexEndArticle);
+			resultToAnalyze = resultToAnalyze.substring(indexEndFilme);
 		}
 
 		return mMovies;
