@@ -21,7 +21,7 @@ import org.apache.http.params.HttpParams;
 import android.util.Log;
 import br.ufc.lesc.plinio.cinesfortaleza.cines.CineVM;
 
-public class CineProvider {
+public class CineProviderVM {
 
 	private final static long MAX_PAGE_SIZE = 500000;
 	private final static int TIMEOUT_CONNECTION = 5000;

@@ -6,7 +6,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -41,7 +40,7 @@ public class CinesFortaleza extends Activity {
 		// create cine list
 		mCines = new Vector<String>();
 
-		CineProvider.stop();
+		CineProviderVM.stop();
 
 		new Refresher(this).execute("");
 	}
@@ -72,7 +71,7 @@ public class CinesFortaleza extends Activity {
 		super.onPause();
 		setProgressBarIndeterminateVisibility(false);
 		setProgressBarVisibility(false);
-		CineProvider.stop();
+		CineProviderVM.stop();
 	}
 
 	public void cineClick(View v) {
@@ -96,7 +95,7 @@ public class CinesFortaleza extends Activity {
 		@Override
 		protected Integer doInBackground(String... params) {
 			// refreshMoviesList
-			return CineProvider.refreshCinesList(this);
+			return CineProviderVM.refreshCinesList(this);
 		}
 
 		@Override
@@ -119,11 +118,11 @@ public class CinesFortaleza extends Activity {
 			}
 			
 			// get list of cines and copy do mCines
-			Vector<Cine> cines = CineProvider.getCines();
+			Vector<Cine> cines = CineProviderVM.getCines();
 			mCines.clear();
 			for (int i = 0; i < cines.size(); i++) {
 				mCines.add(cines.get(i).getName());
-				Log.d("",cines.get(i).getName());
+				//Log.d("",cines.get(i).getName());
 			}
 
 			ArrayAdapter<String> adapter = new ArrayAdapter<String>(mParent,

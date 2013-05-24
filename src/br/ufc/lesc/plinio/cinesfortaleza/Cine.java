@@ -172,7 +172,7 @@ public abstract class Cine {
 		try {
 			mInputStream.close();
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			//ex.printStackTrace();
 		}
 
 	}

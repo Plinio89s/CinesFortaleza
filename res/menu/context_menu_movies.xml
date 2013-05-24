@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/action_context_movies"
+        android:titleCondensed="@string/action_context_movies_condensed"
+        android:visible="true"
+        android:enabled="true"
+        android:onClick="shearchMovie"
+        android:showAsAction="never"
+        android:orderInCategory="10"
+        />
+
+</menu>

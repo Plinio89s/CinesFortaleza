@@ -36,17 +36,18 @@ public final class R {
         public static final int show_movies_layout=0x7f030001;
     }
     public static final class menu {
-        public static final int cines_fortaleza=0x7f070000;
+        public static final int context_menu_movies=0x7f070000;
     }
     public static final class string {
-        public static final int action_settings=0x7f050001;
+        public static final int action_context_movies=0x7f050001;
+        public static final int action_context_movies_condensed=0x7f050002;
         public static final int app_name=0x7f050000;
-        public static final int cine_title=0x7f050006;
-        public static final int empty=0x7f050005;
-        public static final int hello_world=0x7f050002;
-        public static final int movie_title=0x7f050007;
-        public static final int text_choise=0x7f050003;
-        public static final int unique=0x7f050004;
+        public static final int cine_title=0x7f050007;
+        public static final int empty=0x7f050006;
+        public static final int hello_world=0x7f050003;
+        public static final int movie_title=0x7f050008;
+        public static final int text_choise=0x7f050004;
+        public static final int unique=0x7f050005;
     }
     public static final class style {
         /** 

@@ -4,12 +4,18 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 import android.app.Activity;
+import android.app.SearchManager;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -24,6 +30,7 @@ public class ShowMovies extends Activity {
 
 	private Cine mCine;
 	private ListView mListView;
+	private String mMovieSelected;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +55,9 @@ public class ShowMovies extends Activity {
 			}
 		});
 
+		// reg for context menu
+		registerForContextMenu(mListView);
+
 		// start progress bar
 		setProgressBarIndeterminateVisibility(true);
 		setProgressBarVisibility(true);
@@ -57,39 +67,13 @@ public class ShowMovies extends Activity {
 		String cineName = getIntent().getStringExtra(CinesFortaleza.EXTRA_CINE);
 
 		if (cineName != null) {
-			Vector<Cine> cines = CineProvider.getCines();
+			Vector<Cine> cines = CineProviderVM.getCines();
 			for (int i = 0; i < cines.size(); i++) {
 				if (cineName.equalsIgnoreCase(cines.get(i).getName())) {
 					mCine = cines.get(i);
 				}
 			}
 		}
-
-		// CineVM cine1 = new CineVM("", "43");
-		// CineVM cine2 = new CineVM("", "44");
-		// CineVM cine3 = new CineVM("", "52");
-		// CineVM cine4 = new CineVM("", "51");
-		// CineVM cine5 = new CineVM("", "39");
-		// CineVM cine6 = new CineVM("", "36");
-		// CineVM cine7 = new CineVM("", "47");
-		//
-		// if (cineName != null) {
-		// if (cineName.equalsIgnoreCase(cine1.getName())) {
-		// mCine = cine1;
-		// } else if (cineName.equalsIgnoreCase(cine2.getName())) {
-		// mCine = cine2;
-		// } else if (cineName.equalsIgnoreCase(cine3.getName())) {
-		// mCine = cine3;
-		// } else if (cineName.equalsIgnoreCase(cine4.getName())) {
-		// mCine = cine4;
-		// } else if (cineName.equalsIgnoreCase(cine5.getName())) {
-		// mCine = cine5;
-		// } else if (cineName.equalsIgnoreCase(cine6.getName())) {
-		// mCine = cine6;
-		// } else if (cineName.equalsIgnoreCase(cine7.getName())) {
-		// mCine = cine7;
-		// }
-		// }
 
 		mCine.stop();
 
@@ -107,6 +91,8 @@ public class ShowMovies extends Activity {
 
 		mListView.setAdapter(adapter);
 
+		// reg for context menu
+		registerForContextMenu(mListView);
 	}
 
 	@Override
@@ -131,6 +117,25 @@ public class ShowMovies extends Activity {
 		setProgressBarVisibility(false);
 	}
 
+	public void shearchMovie(MenuItem item) {
+		Intent i = new Intent(Intent.ACTION_WEB_SEARCH);
+		i.putExtra(SearchManager.QUERY, mMovieSelected);
+		startActivity(i);
+	}
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+		mMovieSelected = mCine.getMovies().get(info.position).getName();
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.context_menu_movies, menu);
+	}
+	
+	/**
+	 * Class to execute the refresh in another thread
+	 */
 	class Refresher extends AsyncTask<String, Integer, Integer> {
 
 		Activity mParent;
@@ -174,6 +179,9 @@ public class ShowMovies extends Activity {
 					mCine.getMovies());
 
 			mListView.setAdapter(adapter);
+
+			// reg for context menu
+			registerForContextMenu(mListView);
 
 			setProgressBarIndeterminateVisibility(false);
 			setProgressBarVisibility(false);
