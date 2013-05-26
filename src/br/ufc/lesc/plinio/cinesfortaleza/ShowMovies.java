@@ -14,6 +14,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.animation.Animation;
+import android.view.animation.ScaleAnimation;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
@@ -23,7 +25,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 import br.ufc.lesc.plinio.cinesfortaleza.cines.CineBenfica;
 
-public class ShowMovies extends Activity {
+import com.google.ads.Ad;
+import com.google.ads.AdListener;
+import com.google.ads.AdRequest;
+import com.google.ads.AdRequest.ErrorCode;
+import com.google.ads.AdView;
+
+public class ShowMovies extends Activity implements AdListener {
 
 	protected static final String EXTRA_MOVIE = "MOVIE_SELECTED";
 	protected static final String EXTRA_SESSIONS = "SESSIONS";
@@ -31,6 +39,7 @@ public class ShowMovies extends Activity {
 	private Cine mCine;
 	private ListView mListView;
 	private String mMovieSelected;
+	private AdView mAdView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -132,7 +141,7 @@ public class ShowMovies extends Activity {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.context_menu_movies, menu);
 	}
-	
+
 	/**
 	 * Class to execute the refresh in another thread
 	 */
@@ -185,8 +194,46 @@ public class ShowMovies extends Activity {
 
 			setProgressBarIndeterminateVisibility(false);
 			setProgressBarVisibility(false);
+
+			// START AD REQUEST CODE
+			mAdView = (AdView) findViewById(R.id.adView2);
+			mAdView.setAdListener((ShowMovies) mParent);
+			AdRequest testAdRequest = new AdRequest();
+			mAdView.loadAd(testAdRequest);
+			// END AD REQUEST CODE
+
 		}
 
 	} // class Refresher
 
+	// ADLISTENER METHODS IMPLEMENTATION
+
+	@Override
+	public void onReceiveAd(Ad arg0) {
+		ScaleAnimation zoomIn = new ScaleAnimation(.5f, 1f, .5f, 1f,
+				Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF,
+				.5f);
+		zoomIn.setDuration(500);
+		mAdView.startAnimation(zoomIn);
+	}
+
+	@Override
+	public void onDismissScreen(Ad arg0) {
+		// do nothing
+	}
+
+	@Override
+	public void onLeaveApplication(Ad arg0) {
+		// do nothing
+	}
+
+	@Override
+	public void onPresentScreen(Ad arg0) {
+		// do nothing
+	}
+
+	@Override
+	public void onFailedToReceiveAd(Ad arg0, ErrorCode arg1) {
+		// do nothing
+	}
 }

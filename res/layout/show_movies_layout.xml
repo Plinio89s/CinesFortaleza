@@ -1,26 +1,44 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/show_movies_parent_layout"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:layout_gravity="center_horizontal" >
 
-    <TextView
-        android:id="@+id/title_cine"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="@string/empty"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
-        android:textAppearance="?android:attr/textAppearanceLarge" >
-    </TextView>
+    <!-- Ad frame -->
 
-    <ListView
-        android:id="@+id/list_view_movies"
+    <com.google.ads.AdView
+        android:id="@+id/adView2"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        ads:adSize="BANNER"
+        ads:adUnitId="a151a2297057a05" >
+    </com.google.ads.AdView>
+
+    <LinearLayout
+        android:id="@+id/show_movies_parent_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingTop="5dp">
-    </ListView>
+        android:layout_above="@id/adView2"
+        android:orientation="vertical" >
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/title_cine"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:text="@string/empty"
+            android:textAppearance="?android:attr/textAppearanceLarge" >
+        </TextView>
+
+        <ListView
+            android:id="@+id/list_view_movies"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="5dp" >
+        </ListView>
+    </LinearLayout>
+
+</RelativeLayout>
