@@ -42,6 +42,10 @@ public abstract class Cine {
 
 	/* Concrete methods */
 
+	public void setMovies(Vector<MovieData> movies) {
+		mMovies = movies;
+	}
+
 	public Vector<MovieData> getMovies() {
 		return mMovies;
 	}
@@ -172,7 +176,7 @@ public abstract class Cine {
 		try {
 			mInputStream.close();
 		} catch (Exception ex) {
-			//ex.printStackTrace();
+			// ex.printStackTrace();
 		}
 
 	}

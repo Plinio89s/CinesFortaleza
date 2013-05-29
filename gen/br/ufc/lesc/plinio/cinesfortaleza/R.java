@@ -47,6 +47,8 @@ public final class R {
         public static final int app_name=0x7f050000;
         public static final int cine_title=0x7f050007;
         public static final int empty=0x7f050006;
+        public static final int error_refreshing_cine_list=0x7f050009;
+        public static final int error_refreshing_movie_list=0x7f05000a;
         public static final int hello_world=0x7f050003;
         public static final int movie_title=0x7f050008;
         public static final int text_choise=0x7f050004;

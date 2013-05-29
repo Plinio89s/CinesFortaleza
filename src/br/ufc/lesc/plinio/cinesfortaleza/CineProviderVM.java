@@ -34,6 +34,10 @@ public class CineProviderVM {
 	private static InputStream mInputStream;
 	private static boolean mStop = false;
 
+	public static void setCines(Vector<Cine> cines) {
+		mCines = cines;
+	}
+
 	public static Vector<Cine> getCines() {
 		if (mCines == null) {
 			return new Vector<Cine>();
@@ -151,16 +155,16 @@ public class CineProviderVM {
 			if (indexBeginName == -1)
 				break;
 			cineName = cinema.substring(indexBeginName).trim();
-			
+
 			// BUGFIX: o site está com caracteres estranhos
 			cineName = cineName.replace("Ã­", "í");
 			cineName = cineName.replace("Ã¡", "á");
 			cineName = cineName.replace("Ãº", "ú");
 			cineName = cineName.replace("Ã£", "ã");
 
-			//if (cineName.length() > 0) {
-				mCines.add(new CineVM(cineName, cineCode));
-			//}
+			// if (cineName.length() > 0) {
+			mCines.add(new CineVM(cineName, cineCode));
+			// }
 
 			resultToAnalyze = resultToAnalyze.substring(indexEndCinema);
 		}
@@ -178,7 +182,7 @@ public class CineProviderVM {
 	 */
 	private static String streamToString(CinesFortaleza.Refresher refresher)
 			throws IOException {
-		//Log.d("DEBUG", "START");
+		// Log.d("DEBUG", "START");
 		byte[] bytes = new byte[512];
 		int count;
 		long countTotal = 0;
@@ -189,7 +193,7 @@ public class CineProviderVM {
 			baos.write(bytes, 0, count);
 			// set progress
 			refresher.updateProgress((int) (10000 * countTotal / total));
-			//Log.d("Cine.streamToString()", "read: " + countTotal);
+			// Log.d("Cine.streamToString()", "read: " + countTotal);
 			if (countTotal > MAX_PAGE_SIZE) {
 				break;
 			}
@@ -197,7 +201,7 @@ public class CineProviderVM {
 				break;
 			}
 		}
-		//Log.d("DEBUG", "END " + countTotal);
+		// Log.d("DEBUG", "END " + countTotal);
 		return new String(baos.toByteArray(), "iso-8859-1");
 	}
 
@@ -208,7 +212,7 @@ public class CineProviderVM {
 		try {
 			mInputStream.close();
 		} catch (Exception ex) {
-			//ex.printStackTrace();
+			// ex.printStackTrace();
 		}
 
 	}

@@ -1,11 +1,15 @@
 package br.ufc.lesc.plinio.cinesfortaleza;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.Vector;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -23,7 +27,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import br.ufc.lesc.plinio.cinesfortaleza.cines.CineBenfica;
 
 import com.google.ads.Ad;
 import com.google.ads.AdListener;
@@ -41,6 +44,7 @@ public class ShowMovies extends Activity implements AdListener {
 	private String mMovieSelected;
 	private AdView mAdView;
 
+	@SuppressLint("DefaultLocale")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -52,7 +56,7 @@ public class ShowMovies extends Activity implements AdListener {
 		setContentView(R.layout.show_movies_layout);
 
 		// initialize member attributes
-		mCine = new CineBenfica();
+		mCine = null;
 		mListView = (ListView) findViewById(R.id.list_view_movies);
 
 		// set ListView's onItemClick method
@@ -84,7 +88,22 @@ public class ShowMovies extends Activity implements AdListener {
 			}
 		}
 
-		mCine.stop();
+		if (mCine == null) {
+			finish();
+			return;
+		}
+
+		// load stored data
+		SharedPreferences storedData = getSharedPreferences(mCine.getName()
+				.toLowerCase().replaceAll("\\W", "_"), MODE_PRIVATE);
+
+		Set<String> keys = storedData.getAll().keySet();
+		Vector<MovieData> movies = new Vector<MovieData>();
+		for (Iterator<String> i = keys.iterator(); i.hasNext();) {
+			MovieData m = new MovieData(i.next());
+			movies.add(m);
+		}
+		mCine.setMovies(movies);
 
 		new Refresher(this).execute("");
 	}
@@ -169,29 +188,43 @@ public class ShowMovies extends Activity implements AdListener {
 			setProgress(values[0]);
 		}
 
+		@SuppressLint("DefaultLocale")
 		@Override
 		protected void onPostExecute(Integer result) {
 			super.onPostExecute(result);
 
 			setProgress(100000);
 
+			// if error
 			if (result != 0) {
-				Toast.makeText(
-						mParent,
-						"Não foi possível acessar a lista de filmes do cinema selecionado.",
+				Toast.makeText(mParent,
+						getString(R.string.error_refreshing_movie_list),
 						Toast.LENGTH_LONG).show();
-				mParent.finish();
+
+				// stop progress bar
+				setProgressBarIndeterminateVisibility(false);
+				setProgressBarVisibility(false);
+
+				return;
 			}
 
+			// set list view with list of cines
 			ArrayAdapter<MovieData> adapter = new ArrayAdapter<MovieData>(
 					mParent, android.R.layout.simple_list_item_1,
 					mCine.getMovies());
-
 			mListView.setAdapter(adapter);
 
-			// reg for context menu
-			registerForContextMenu(mListView);
+			// store data
+			SharedPreferences.Editor editor = getSharedPreferences(
+					mCine.getName().toLowerCase().replaceAll("\\W", "_"),
+					MODE_PRIVATE).edit();
+			editor.clear();
+			for (int i = 0; i < mCine.getMovies().size(); i++) {
+				editor.putString(mCine.getMovies().get(i).getName(), "");
+			}
+			editor.commit();
 
+			// stop progress bar
 			setProgressBarIndeterminateVisibility(false);
 			setProgressBarVisibility(false);
 

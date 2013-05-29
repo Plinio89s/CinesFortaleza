@@ -1,9 +1,12 @@
 package br.ufc.lesc.plinio.cinesfortaleza;
 
+import java.util.Iterator;
+import java.util.Set;
 import java.util.Vector;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -16,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import br.ufc.lesc.plinio.cinesfortaleza.cines.CineVM;
 
 import com.google.ads.Ad;
 import com.google.ads.AdListener;
@@ -26,6 +30,7 @@ import com.google.ads.AdView;
 public class CinesFortaleza extends Activity implements AdListener {
 
 	public static final String EXTRA_CINE = "CINE_NAME";
+	public static final String CINE_FILE = "cines";
 
 	private Vector<String> mCines;
 	private ListView mListView;
@@ -41,6 +46,16 @@ public class CinesFortaleza extends Activity implements AdListener {
 
 		setContentView(R.layout.activity_cines_fortaleza);
 
+		// set listener to list view
+		mListView = (ListView) findViewById(R.id.list_view_cines);
+		mListView.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View v,
+					int position, long id) {
+				cineClick(v);
+			}
+		});
+
 		// start progress bar
 		setProgressBarIndeterminateVisibility(true);
 		setProgressBarVisibility(true);
@@ -48,6 +63,24 @@ public class CinesFortaleza extends Activity implements AdListener {
 
 		// create cine list
 		mCines = new Vector<String>();
+
+		// load last stored data
+		SharedPreferences storedData = getSharedPreferences(CINE_FILE,
+				MODE_PRIVATE);
+
+		Set<String> keys = storedData.getAll().keySet();
+		String key, value;
+		Vector<Cine> cines = new Vector<Cine>();
+		for (Iterator<String> i = keys.iterator(); i.hasNext();) {
+			key = i.next();
+			value = storedData.getString(key, "");
+			// if (value.matches("[\\d]+")) {
+			if (value.length() > 0) {
+				cines.add(new CineVM(key, value));
+				mCines.add(key);
+			}
+		}
+		CineProviderVM.setCines(cines);
 
 		new Refresher(this).execute("");
 	}
@@ -60,17 +93,8 @@ public class CinesFortaleza extends Activity implements AdListener {
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
 				android.R.layout.simple_list_item_1, mCines);
 
-		// set ListView with cines and the click listener
-		mListView = (ListView) findViewById(R.id.list_view_cines);
+		// set ListView with cines
 		mListView.setAdapter(adapter);
-		mListView.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View v,
-					int position, long id) {
-				cineClick(v);
-			}
-		});
-
 	}
 
 	@Override
@@ -117,11 +141,17 @@ public class CinesFortaleza extends Activity implements AdListener {
 
 			setProgress(100000);
 
+			// if error
 			if (result != 0) {
 				Toast.makeText(mParent,
-						"Não foi possível acessar a lista de Cinemas.",
+						getString(R.string.error_refreshing_cine_list),
 						Toast.LENGTH_LONG).show();
-				//mParent.finish();
+
+				// stop progress bar
+				setProgressBarIndeterminateVisibility(false);
+				setProgressBarVisibility(false);
+
+				return;
 			}
 
 			// get list of cines and copy do mCines
@@ -131,11 +161,26 @@ public class CinesFortaleza extends Activity implements AdListener {
 				mCines.add(cines.get(i).getName());
 			}
 
+			// set list view with list of cines
 			ArrayAdapter<String> adapter = new ArrayAdapter<String>(mParent,
 					android.R.layout.simple_list_item_1, mCines);
-
 			mListView.setAdapter(adapter);
 
+			// store data
+			SharedPreferences.Editor editor = getSharedPreferences(CINE_FILE,
+					MODE_PRIVATE).edit();
+			editor.clear();
+			editor.commit();
+			String key, value;
+			for (int i = 0; i < cines.size(); i++) {
+				key = cines.get(i).getName();
+				value = cines.get(i).getURL();
+				value = value.substring(value.lastIndexOf('=') + 1);
+				editor.putString(key, value);
+			}
+			editor.commit();
+
+			// stop progress bar
 			setProgressBarIndeterminateVisibility(false);
 			setProgressBarVisibility(false);
 
