@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Cines Fortaleza</string>
+    <string name="app_name">Cinemas Fortaleza</string>
     <string name="action_context_movies">Buscar informações sobre o filme</string>
     <string name="action_context_movies_condensed">Buscar filme</string>
     <string name="hello_world">Hello world!</string>

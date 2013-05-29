@@ -42,6 +42,9 @@ public class CineVM extends Cine {
 		int indexBeginHorarios;
 		int indexEndHorarios;
 		String horarios;
+		int indexBeginCaracteristica;
+		int indexEndCaracteristica;
+		String caracteristica = "";
 
 		String resultToAnalyze = rawHTMLCode;
 		Vector<String> sessions = new Vector<String>();
@@ -59,13 +62,12 @@ public class CineVM extends Cine {
 			return mMovies;
 		resultToAnalyze = resultToAnalyze.substring(indexBeginSection,
 				indexEndSection);
-		
+
 		while (resultToAnalyze.indexOf("Filme: </em><a href=\"") != -1) {
 
 			// get title
 			indexBeginFilme = resultToAnalyze.indexOf("Filme: </em><a href=\"") + 21;
-			indexEndFilme = resultToAnalyze.indexOf("Classificação:",
-					indexBeginFilme);
+			indexEndFilme = resultToAnalyze.indexOf("Filme:", indexBeginFilme);
 			if (indexEndFilme == -1)
 				break;
 			filme = resultToAnalyze.substring(indexBeginFilme, indexEndFilme);
@@ -78,12 +80,24 @@ public class CineVM extends Cine {
 				break;
 			title = filme.substring(indexBeginTitle, indexEndTitle).trim();
 
-			if (title.length() > 0) {
-				m = new MovieData(title);
-			} else {
+			if (title.length() <= 0) {
 				resultToAnalyze = resultToAnalyze.substring(indexEndFilme);
 				continue;
 			}
+
+			// get dub/leg
+			if (filme.contains("Característica: </em>")) {
+				indexBeginCaracteristica = filme
+						.indexOf("Característica: </em>") + 21;
+				indexEndCaracteristica = filme.indexOf("</span>",
+						indexBeginCaracteristica);
+				if (indexEndCaracteristica != -1) {
+					caracteristica = filme.substring(indexBeginCaracteristica,
+							indexEndCaracteristica);
+				}
+			}
+			
+			m = new MovieData(title + " (" + caracteristica.substring(0, 3) + ")");
 
 			// get sessions
 			sessions = new Vector<String>();

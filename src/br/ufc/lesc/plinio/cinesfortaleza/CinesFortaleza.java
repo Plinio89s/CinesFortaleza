@@ -121,7 +121,7 @@ public class CinesFortaleza extends Activity implements AdListener {
 				Toast.makeText(mParent,
 						"Não foi possível acessar a lista de Cinemas.",
 						Toast.LENGTH_LONG).show();
-				mParent.finish();
+				//mParent.finish();
 			}
 
 			// get list of cines and copy do mCines
@@ -129,7 +129,6 @@ public class CinesFortaleza extends Activity implements AdListener {
 			mCines.clear();
 			for (int i = 0; i < cines.size(); i++) {
 				mCines.add(cines.get(i).getName());
-				// Log.d("",cines.get(i).getName());
 			}
 
 			ArrayAdapter<String> adapter = new ArrayAdapter<String>(mParent,
