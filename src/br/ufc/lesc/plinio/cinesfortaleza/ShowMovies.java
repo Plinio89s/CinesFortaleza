@@ -1,19 +1,18 @@
 package br.ufc.lesc.plinio.cinesfortaleza;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
 import java.util.Vector;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.format.Time;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,13 +37,15 @@ public class ShowMovies extends Activity implements AdListener {
 
 	protected static final String EXTRA_MOVIE = "MOVIE_SELECTED";
 	protected static final String EXTRA_SESSIONS = "SESSIONS";
+	protected static final String KEY_MOVIE_NAME = "MOVIE_NAME_";
 
 	private Cine mCine;
 	private ListView mListView;
 	private String mMovieSelected;
 	private AdView mAdView;
+	private StoreData mStoredData;
+	private Refresher mRefresher;
 
-	@SuppressLint("DefaultLocale")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -57,9 +58,9 @@ public class ShowMovies extends Activity implements AdListener {
 
 		// initialize member attributes
 		mCine = null;
-		mListView = (ListView) findViewById(R.id.list_view_movies);
 
 		// set ListView's onItemClick method
+		mListView = (ListView) findViewById(R.id.list_view_movies);
 		mListView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View v,
@@ -71,19 +72,19 @@ public class ShowMovies extends Activity implements AdListener {
 		// reg for context menu
 		registerForContextMenu(mListView);
 
-		// start progress bar
-		setProgressBarIndeterminateVisibility(true);
-		setProgressBarVisibility(true);
-		setProgress(0);
-
 		// decode cine choose
 		String cineName = getIntent().getStringExtra(CinesFortaleza.EXTRA_CINE);
 
 		if (cineName != null) {
-			Vector<Cine> cines = CineProviderVM.getCines();
+			// Vector<Cine> cines = CineProviderVM.getCines();
+			// load stored data
+			mStoredData = new StoreData(this);
+			Vector<Cine> cines = mStoredData.getCines();
 			for (int i = 0; i < cines.size(); i++) {
 				if (cineName.equalsIgnoreCase(cines.get(i).getName())) {
 					mCine = cines.get(i);
+					mStoredData.loadMovies(mCine);
+					break;
 				}
 			}
 		}
@@ -92,43 +93,63 @@ public class ShowMovies extends Activity implements AdListener {
 			finish();
 			return;
 		}
+	}
 
-		// load stored data
-		SharedPreferences storedData = getSharedPreferences(mCine.getName()
-				.toLowerCase().replaceAll("\\W", "_"), MODE_PRIVATE);
-
-		Set<String> keys = storedData.getAll().keySet();
-		Vector<MovieData> movies = new Vector<MovieData>();
-		for (Iterator<String> i = keys.iterator(); i.hasNext();) {
-			MovieData m = new MovieData(i.next());
-			movies.add(m);
-		}
-		mCine.setMovies(movies);
-
-		new Refresher(this).execute("");
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.settings, menu);
+		return true;
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 
-		((TextView) findViewById(R.id.title_cine)).setText(mCine.getName());
+		// load stored data
+		mStoredData.loadMovies(mCine);
 
+		// create adapter
 		ArrayAdapter<MovieData> adapter = new ArrayAdapter<MovieData>(this,
 				android.R.layout.simple_list_item_1, mCine.getMovies());
 
+		// set cine name
+		((TextView) findViewById(R.id.title_cine)).setText(mCine.getName());
+
+		// set list of movies
 		mListView.setAdapter(adapter);
 
-		// reg for context menu
-		registerForContextMenu(mListView);
+		// show last refresh time
+		TextView tv = (TextView) findViewById(R.id.textViewLastRefreshCine);
+		if (mStoredData.getLastRefreshCineMili(mCine) > 0) {
+			Time time = new Time();
+			time.set(mStoredData.getLastRefreshCineMili(mCine));
+			tv.setText(getString(R.string.last_refresh)
+					+ time.format(" %d/%m/%y (%R)."));
+		} else {
+			tv.setText(getString(R.string.empty));
+		}
+
+		// start refresher if needed
+		if (mStoredData.refreshNeededCine(mCine)) {
+			mRefresher = new Refresher(this);
+			mRefresher.execute("");
+		} else {
+			// START AD REQUEST CODE
+			mAdView = (AdView) findViewById(R.id.adView2);
+			mAdView.setAdListener(this);
+			AdRequest testAdRequest = new AdRequest();
+			mAdView.loadAd(testAdRequest);
+			// END AD REQUEST CODE
+		}
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		setProgressBarIndeterminateVisibility(false);
-		setProgressBarVisibility(false);
-		mCine.stop();
+		if (mRefresher != null) {
+			mRefresher.stop();
+		}
 	}
 
 	private void onClick(int pos) {
@@ -149,6 +170,11 @@ public class ShowMovies extends Activity implements AdListener {
 		Intent i = new Intent(Intent.ACTION_WEB_SEARCH);
 		i.putExtra(SearchManager.QUERY, mMovieSelected);
 		startActivity(i);
+	}
+
+	public void onRefreshClick(MenuItem item) {
+		mRefresher = new Refresher(this);
+		mRefresher.execute("");
 	}
 
 	@Override
@@ -172,6 +198,12 @@ public class ShowMovies extends Activity implements AdListener {
 			mParent = parent;
 		}
 
+		public void stop() {
+			// stop progress bar
+			publishProgress(0);
+			mCine.stop();
+		}
+
 		public void updateProgress(int progress) {
 			publishProgress(progress);
 		}
@@ -185,6 +217,13 @@ public class ShowMovies extends Activity implements AdListener {
 		@Override
 		protected void onProgressUpdate(Integer... values) {
 			super.onProgressUpdate(values);
+			if (values[0] <= 0 || values[0] >= 10000) {
+				setProgressBarIndeterminateVisibility(false);
+				setProgressBarVisibility(false);
+			} else {
+				setProgressBarIndeterminateVisibility(true);
+				setProgressBarVisibility(true);
+			}
 			setProgress(values[0]);
 		}
 
@@ -193,18 +232,13 @@ public class ShowMovies extends Activity implements AdListener {
 		protected void onPostExecute(Integer result) {
 			super.onPostExecute(result);
 
-			setProgress(100000);
+			setProgress(10000);
 
 			// if error
 			if (result != 0) {
 				Toast.makeText(mParent,
 						getString(R.string.error_refreshing_movie_list),
 						Toast.LENGTH_LONG).show();
-
-				// stop progress bar
-				setProgressBarIndeterminateVisibility(false);
-				setProgressBarVisibility(false);
-
 				return;
 			}
 
@@ -215,18 +249,18 @@ public class ShowMovies extends Activity implements AdListener {
 			mListView.setAdapter(adapter);
 
 			// store data
-			SharedPreferences.Editor editor = getSharedPreferences(
-					mCine.getName().toLowerCase().replaceAll("\\W", "_"),
-					MODE_PRIVATE).edit();
-			editor.clear();
-			for (int i = 0; i < mCine.getMovies().size(); i++) {
-				editor.putString(mCine.getMovies().get(i).getName(), "");
-			}
-			editor.commit();
+			mStoredData.saveMovies(mCine);
 
-			// stop progress bar
-			setProgressBarIndeterminateVisibility(false);
-			setProgressBarVisibility(false);
+			// show last refresh time
+			TextView tv = (TextView) findViewById(R.id.textViewLastRefreshCine);
+			if (mStoredData.getLastRefreshCineMili(mCine) > 0) {
+				Time time = new Time();
+				time.set(mStoredData.getLastRefreshCineMili(mCine));
+				tv.setText(getString(R.string.last_refresh)
+						+ time.format(" %d/%m/%y (%R)."));
+			} else {
+				tv.setText(getString(R.string.empty));
+			}
 
 			// START AD REQUEST CODE
 			mAdView = (AdView) findViewById(R.id.adView2);
@@ -234,7 +268,6 @@ public class ShowMovies extends Activity implements AdListener {
 			AdRequest testAdRequest = new AdRequest();
 			mAdView.loadAd(testAdRequest);
 			// END AD REQUEST CODE
-
 		}
 
 	} // class Refresher

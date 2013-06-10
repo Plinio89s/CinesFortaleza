@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.util.Vector;
 
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -18,6 +17,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 
 public abstract class Cine {
@@ -74,11 +74,11 @@ public abstract class Cine {
 			// get response
 			StatusLine statusLine = response.getStatusLine();
 			HttpEntity entity = response.getEntity();
-			Header headers[] = response.getAllHeaders();
-			for (int i = 0; i < headers.length; i++) {
-				Log.d("Cine.refreshMoviesList", headers[i].getName() + ": "
-						+ headers[i].getValue());
-			}
+			// Header headers[] = response.getAllHeaders();
+			// for (int i = 0; i < headers.length; i++) {
+			// Log.d("Cine.refreshMoviesList", headers[i].getName() + ": "
+			// + headers[i].getValue());
+			// }
 			mInputStream = entity.getContent();
 
 			// check response's status
@@ -114,6 +114,22 @@ public abstract class Cine {
 		}
 
 		return error;
+	}
+
+	public void stop() {
+		mStop = true;
+		if (mInputStream == null)
+			return;
+		try {
+			mInputStream.close();
+		} catch (Exception ex) {
+			// ex.printStackTrace();
+		}
+	}
+
+	@SuppressLint("DefaultLocale")
+	public String fileName() {
+		return "cine_" + getName().toLowerCase().replaceAll("\\W", "_");
 	}
 
 	/* Auxiliary methods */
@@ -169,15 +185,4 @@ public abstract class Cine {
 		return new String(baos.toByteArray(), "iso-8859-1");
 	}
 
-	public void stop() {
-		mStop = true;
-		if (mInputStream == null)
-			return;
-		try {
-			mInputStream.close();
-		} catch (Exception ex) {
-			// ex.printStackTrace();
-		}
-
-	}
 }

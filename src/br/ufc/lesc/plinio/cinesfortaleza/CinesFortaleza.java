@@ -1,14 +1,14 @@
 package br.ufc.lesc.plinio.cinesfortaleza;
 
-import java.util.Iterator;
-import java.util.Set;
 import java.util.Vector;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.format.Time;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.animation.Animation;
@@ -19,7 +19,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import br.ufc.lesc.plinio.cinesfortaleza.cines.CineVM;
 
 import com.google.ads.Ad;
 import com.google.ads.AdListener;
@@ -30,11 +29,13 @@ import com.google.ads.AdView;
 public class CinesFortaleza extends Activity implements AdListener {
 
 	public static final String EXTRA_CINE = "CINE_NAME";
-	public static final String CINE_FILE = "cines";
+	public static final String TAG_DEBUG = "CinesFortaleza";
 
 	private Vector<String> mCines;
 	private ListView mListView;
 	private AdView mAdView;
+	private StoreData mStoredData;
+	private Refresher mRefresher;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -56,38 +57,30 @@ public class CinesFortaleza extends Activity implements AdListener {
 			}
 		});
 
-		// start progress bar
-		setProgressBarIndeterminateVisibility(true);
-		setProgressBarVisibility(true);
-		setProgress(0);
-
 		// create cine list
 		mCines = new Vector<String>();
 
-		// load last stored data
-		SharedPreferences storedData = getSharedPreferences(CINE_FILE,
-				MODE_PRIVATE);
-
-		Set<String> keys = storedData.getAll().keySet();
-		String key, value;
-		Vector<Cine> cines = new Vector<Cine>();
-		for (Iterator<String> i = keys.iterator(); i.hasNext();) {
-			key = i.next();
-			value = storedData.getString(key, "");
-			// if (value.matches("[\\d]+")) {
-			if (value.length() > 0) {
-				cines.add(new CineVM(key, value));
-				mCines.add(key);
-			}
+		// retrieve stored data (if any)
+		mStoredData = new StoreData(this);
+		Vector<Cine> c = mStoredData.getCines();
+		for (int i = 0; i < c.size(); i++) {
+			mCines.add(c.get(i).getName());
 		}
-		CineProviderVM.setCines(cines);
+	}
 
-		new Refresher(this).execute("");
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.settings, menu);
+		return true;
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
+
+		// load stored data
+		mStoredData.loadCines();
 
 		// create adapter
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
@@ -95,20 +88,49 @@ public class CinesFortaleza extends Activity implements AdListener {
 
 		// set ListView with cines
 		mListView.setAdapter(adapter);
+
+		// show last refresh time
+		TextView tv = (TextView) findViewById(R.id.textViewLastRefresh);
+		if (mStoredData.getLastRefreshMili() > 0) {
+			Time time = new Time();
+			time.set(mStoredData.getLastRefreshMili());
+			tv.setText(getString(R.string.last_refresh)
+					+ time.format(" %d/%m/%y (%R)."));
+		} else {
+			tv.setText(getString(R.string.text_choise));
+		}
+
+		// start refresher if needed
+		if (mStoredData.refreshNeeded()) {
+			mRefresher = new Refresher(this);
+			mRefresher.execute("");
+		} else {
+			// START AD REQUEST CODE
+			mAdView = (AdView) findViewById(R.id.adView);
+			mAdView.setAdListener(this);
+			AdRequest testAdRequest = new AdRequest();
+			mAdView.loadAd(testAdRequest);
+			// END AD REQUEST CODE
+		}
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		setProgressBarIndeterminateVisibility(false);
-		setProgressBarVisibility(false);
-		CineProviderVM.stop();
+		if (mRefresher != null) {
+			mRefresher.stop();
+		}
 	}
 
 	public void cineClick(View v) {
 		Intent i = new Intent(this, ShowMovies.class);
 		i.putExtra(EXTRA_CINE, ((TextView) v).getText());
 		startActivity(i);
+	}
+
+	public void onRefreshClick(MenuItem item) {
+		mRefresher = new Refresher(this);
+		mRefresher.execute("");
 	}
 
 	class Refresher extends AsyncTask<String, Integer, Integer> {
@@ -119,12 +141,23 @@ public class CinesFortaleza extends Activity implements AdListener {
 			mParent = parent;
 		}
 
+		public void stop() {
+			// stop progress bar
+			publishProgress(0);
+
+			CineProviderVM.stop();
+		}
+
 		public void updateProgress(int progress) {
 			publishProgress(progress);
 		}
 
 		@Override
 		protected Integer doInBackground(String... params) {
+
+			// start progress bar
+			publishProgress(0);
+
 			// refreshMoviesList
 			return CineProviderVM.refreshCinesList(this);
 		}
@@ -132,6 +165,13 @@ public class CinesFortaleza extends Activity implements AdListener {
 		@Override
 		protected void onProgressUpdate(Integer... values) {
 			super.onProgressUpdate(values);
+			if (values[0] <= 0 || values[0] >= 10000) {
+				setProgressBarIndeterminateVisibility(false);
+				setProgressBarVisibility(false);
+			} else {
+				setProgressBarIndeterminateVisibility(true);
+				setProgressBarVisibility(true);
+			}
 			setProgress(values[0]);
 		}
 
@@ -139,18 +179,13 @@ public class CinesFortaleza extends Activity implements AdListener {
 		protected void onPostExecute(Integer result) {
 			super.onPostExecute(result);
 
-			setProgress(100000);
+			publishProgress(10000);
 
 			// if error
 			if (result != 0) {
 				Toast.makeText(mParent,
 						getString(R.string.error_refreshing_cine_list),
 						Toast.LENGTH_LONG).show();
-
-				// stop progress bar
-				setProgressBarIndeterminateVisibility(false);
-				setProgressBarVisibility(false);
-
 				return;
 			}
 
@@ -166,23 +201,20 @@ public class CinesFortaleza extends Activity implements AdListener {
 					android.R.layout.simple_list_item_1, mCines);
 			mListView.setAdapter(adapter);
 
-			// store data
-			SharedPreferences.Editor editor = getSharedPreferences(CINE_FILE,
-					MODE_PRIVATE).edit();
-			editor.clear();
-			editor.commit();
-			String key, value;
-			for (int i = 0; i < cines.size(); i++) {
-				key = cines.get(i).getName();
-				value = cines.get(i).getURL();
-				value = value.substring(value.lastIndexOf('=') + 1);
-				editor.putString(key, value);
-			}
-			editor.commit();
+			// save data
+			mStoredData.setCines(cines);
+			mStoredData.saveCines();
 
-			// stop progress bar
-			setProgressBarIndeterminateVisibility(false);
-			setProgressBarVisibility(false);
+			// show last refresh time
+			TextView tv = (TextView) findViewById(R.id.textViewLastRefresh);
+			if (mStoredData.getLastRefreshMili() > 0) {
+				Time time = new Time();
+				time.set(mStoredData.getLastRefreshMili());
+				tv.setText(getString(R.string.last_refresh)
+						+ time.format(" %d/%m/%y (%R)."));
+			} else {
+				tv.setText(getString(R.string.text_choise));
+			}
 
 			// START AD REQUEST CODE
 			mAdView = (AdView) findViewById(R.id.adView);

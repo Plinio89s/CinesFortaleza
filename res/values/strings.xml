@@ -11,6 +11,8 @@
     <string name="cine_title">Cinema</string>
     <string name="movie_title">Sessões</string>
     <string name="error_refreshing_cine_list">Não foi possível atualizar a lista de Cinemas.</string>
-    <string name="error_refreshing_movie_list">Não foi possível acessar a lista de filmes do cinema selecionado.</string>
+    <string name="error_refreshing_movie_list">Não foi possível atualizar a lista de filmes do cinema selecionado.</string>
+    <string name="last_refresh">Atualizado em:</string>
+    <string name="refresh">Atualizar</string>
 
 </resources>
