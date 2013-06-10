@@ -3,10 +3,13 @@ package br.ufc.lesc.plinio.cinesfortaleza;
 import java.util.Vector;
 
 import android.app.Activity;
+import android.app.SearchManager;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.format.Time;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,6 +17,7 @@ import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -36,6 +40,7 @@ public class CinesFortaleza extends Activity implements AdListener {
 	private AdView mAdView;
 	private StoreData mStoredData;
 	private Refresher mRefresher;
+	private String mCineSelected;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +62,9 @@ public class CinesFortaleza extends Activity implements AdListener {
 			}
 		});
 
+		// reg for context menu
+		registerForContextMenu(mListView);
+
 		// create cine list
 		mCines = new Vector<String>();
 
@@ -73,6 +81,15 @@ public class CinesFortaleza extends Activity implements AdListener {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.settings, menu);
 		return true;
+	}
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+		mCineSelected = mCines.get(info.position);
+		getMenuInflater().inflate(R.menu.context_menu_cines, menu);
 	}
 
 	@Override
@@ -131,6 +148,12 @@ public class CinesFortaleza extends Activity implements AdListener {
 	public void onRefreshClick(MenuItem item) {
 		mRefresher = new Refresher(this);
 		mRefresher.execute("");
+	}
+
+	public void webShearch(MenuItem item) {
+		Intent i = new Intent(Intent.ACTION_WEB_SEARCH);
+		i.putExtra(SearchManager.QUERY, mCineSelected);
+		startActivity(i);
 	}
 
 	class Refresher extends AsyncTask<String, Integer, Integer> {

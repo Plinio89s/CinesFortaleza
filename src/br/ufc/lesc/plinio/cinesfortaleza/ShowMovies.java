@@ -13,7 +13,6 @@ import android.text.format.Time;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
@@ -103,6 +102,15 @@ public class ShowMovies extends Activity implements AdListener {
 	}
 
 	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+		mMovieSelected = mCine.getMovies().get(info.position).getName();
+		getMenuInflater().inflate(R.menu.context_menu_movies, menu);
+	}
+
+	@Override
 	protected void onResume() {
 		super.onResume();
 
@@ -166,7 +174,7 @@ public class ShowMovies extends Activity implements AdListener {
 		setProgressBarVisibility(false);
 	}
 
-	public void shearchMovie(MenuItem item) {
+	public void webShearch(MenuItem item) {
 		Intent i = new Intent(Intent.ACTION_WEB_SEARCH);
 		i.putExtra(SearchManager.QUERY, mMovieSelected);
 		startActivity(i);
@@ -175,16 +183,6 @@ public class ShowMovies extends Activity implements AdListener {
 	public void onRefreshClick(MenuItem item) {
 		mRefresher = new Refresher(this);
 		mRefresher.execute("");
-	}
-
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-		mMovieSelected = mCine.getMovies().get(info.position).getName();
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.context_menu_movies, menu);
 	}
 
 	/**

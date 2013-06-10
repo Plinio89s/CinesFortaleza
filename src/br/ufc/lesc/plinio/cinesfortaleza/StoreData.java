@@ -170,8 +170,7 @@ public class StoreData {
 		}
 		cine.setMovies(movies);
 
-		Log.d(CinesFortaleza.TAG_DEBUG, "load");
-		printPref(cine.fileName());
+		// printPref(cine.fileName());
 	}
 
 	public void saveMovies(Cine cine) {
@@ -196,8 +195,7 @@ public class StoreData {
 		editor.putLong(KEY_LAST_REFRESH, System.currentTimeMillis());
 		editor.commit();
 
-		Log.d(CinesFortaleza.TAG_DEBUG, "save");
-		printPref(cine.fileName());
+		// printPref(cine.fileName());
 	}
 
 	// private void clearSharedPrefs() {

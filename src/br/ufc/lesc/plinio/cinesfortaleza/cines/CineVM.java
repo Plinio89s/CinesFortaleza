@@ -67,7 +67,7 @@ public class CineVM extends Cine {
 
 			// get title
 			indexBeginFilme = resultToAnalyze.indexOf("Filme: </em><a href=\"") + 21;
-			indexEndFilme = resultToAnalyze.indexOf("Filme:", indexBeginFilme);
+			indexEndFilme = resultToAnalyze.indexOf("border:none", indexBeginFilme);
 			if (indexEndFilme == -1)
 				break;
 			filme = resultToAnalyze.substring(indexBeginFilme, indexEndFilme);

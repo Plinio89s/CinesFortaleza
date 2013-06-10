@@ -3,7 +3,9 @@
 
     <string name="app_name">Cinemas Fortaleza</string>
     <string name="action_context_movies">Buscar informações sobre o filme</string>
+    <string name="action_context_cines">Buscar informações sobre o cinema</string>
     <string name="action_context_movies_condensed">Buscar filme</string>
+    <string name="action_context_cines_condensed">Buscar cinema</string>
     <string name="hello_world">Hello world!</string>
     <string name="text_choise">Escolha o cinema que você deseja consultar:</string>
     <string name="unique">Press Here!</string>
